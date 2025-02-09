@@ -28,16 +28,16 @@ variable "description" {
 
 }
 
-variable "prefix" {
+variable "yc_prefix" {
   type    = string
-  default = "mlgmow02app"
+  default = "goslingwrk"
 }
 
-variable "postfix" {
+variable "yc_postfix" {
   type        = string
   description = "(Mandatory) Unique 3 digit number in yandex cloud for vm"
   validation {
-    condition     = length(var.postfix) == 3 && can(regex("[0-9]", var.postfix))
+    condition     = length(var.yc_postfix) == 3 && can(regex("[0-9]", var.yc_postfix))
     error_message = "Not valid value for postfix. Need 3 digits"
 
   }
@@ -102,7 +102,7 @@ variable "service_account_id" {
   description = "(Optional) ID of the service account authorized for this instance."
 }
 
-variable "metadata_options" {
+variable "yc_metadata_options" {
   type        = any
   default     = {}
   description = "(Optional) Options allow user to configure access to instance's metadata"
@@ -227,7 +227,7 @@ variable "filesystem" {
   EOT
 }
 
-variable "network_interface" {
+variable "yc_network_interface" {
   type        = any
   description = <<-EOT
   (Required) Networks to attach to the instance. This can be specified multiple times. The structure is documented below.

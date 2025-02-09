@@ -1,19 +1,33 @@
+
+##################Data variables###########################################
+
+variable "ami_ssm_parameter" {
+  description = "SSM parameter name for the AMI ID. For Amazon Linux AMI SSM parameters see [reference](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-public-parameters-ami.html)"
+  type        = string
+  default     = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+}
+
+##################Resourceses variables####################################
+
 variable "create" {
   description = "Whether to create an instance"
   type        = bool
   default     = true
 }
 
-variable "name" {
-  description = "Name to be used on EC2 instance created"
-  type        = string
-  default     = ""
+variable "aws_prefix" {
+  type    = string
+  default = "goslingwrk"
 }
 
-variable "ami_ssm_parameter" {
-  description = "SSM parameter name for the AMI ID. For Amazon Linux AMI SSM parameters see [reference](https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-public-parameters-ami.html)"
+variable "aws_postfix" {
   type        = string
-  default     = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+  description = "(Mandatory) Unique 3 digit number in yandex cloud for vm"
+  validation {
+    condition     = length(var.aws_postfix) == 3 && can(regex("[0-9]", var.aws_postfix))
+    error_message = "Not valid value for postfix. Need 3 digits"
+
+  }
 }
 
 variable "ami" {
@@ -154,7 +168,7 @@ variable "launch_template" {
   default     = {}
 }
 
-variable "metadata_options" {
+variable "aws_metadata_options" {
   description = "Customize the metadata options of the instance"
   type        = map(string)
   default = {
@@ -170,7 +184,7 @@ variable "monitoring" {
   default     = null
 }
 
-variable "network_interface" {
+variable "aws_network_interface" {
   description = "Customize network interfaces to be attached at instance boot time"
   type        = list(map(string))
   default     = []

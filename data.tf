@@ -1,3 +1,9 @@
+##################################################
+#                                                #
+#              YC provider data                  #
+#                                                #
+##################################################
+
 data "yandex_client_config" "client" {
 
   count = var.yc_create ? 1 : 0
@@ -12,7 +18,18 @@ data "yandex_compute_image" "image" {
 
 }
 
+##################################################
+#                                                #
+#              AWS provider data                 #
+#                                                #
+##################################################
 data "aws_partition" "current" {
   count = var.aws_create ? 1 : 0
+}
+
+data "aws_ssm_parameter" "this" {
+  count = var.aws_create ? 1 : 0
+
+  name = var.ami_ssm_parameter
 }
 

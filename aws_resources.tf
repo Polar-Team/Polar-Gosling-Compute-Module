@@ -96,7 +96,7 @@ resource "aws_instance" "this" {
   }
 
   dynamic "metadata_options" {
-    for_each = length(var.metadata_options) > 0 ? [var.metadata_options] : []
+    for_each = length(var.aws_metadata_options) > 0 ? [var.aws_metadata_options] : []
 
     content {
       http_endpoint               = try(metadata_options.value.http_endpoint, "enabled")
@@ -107,7 +107,7 @@ resource "aws_instance" "this" {
   }
 
   dynamic "network_interface" {
-    for_each = var.network_interface
+    for_each = var.aws_network_interface
 
     content {
       device_index          = network_interface.value.device_index
@@ -148,7 +148,7 @@ resource "aws_instance" "this" {
     enabled = var.enclave_options_enabled
   }
 
-  source_dest_check                    = length(var.network_interface) > 0 ? null : var.source_dest_check
+  source_dest_check                    = length(var.aws_network_interface) > 0 ? null : var.source_dest_check
   disable_api_termination              = var.disable_api_termination
   disable_api_stop                     = var.disable_api_stop
   instance_initiated_shutdown_behavior = var.instance_initiated_shutdown_behavior
@@ -166,6 +166,6 @@ resource "aws_instance" "this" {
     delete = try(var.timeouts.delete, null)
   }
 
-  tags        = merge({ "Name" = var.name }, var.instance_tags, var.tags)
-  volume_tags = var.enable_volume_tags ? merge({ "Name" = var.name }, var.volume_tags) : null
+  tags        = merge({ "Name" = "${var.aws_prefix}${var.aws_postfix}" }, var.instance_tags, var.tags)
+  volume_tags = var.enable_volume_tags ? merge({ "Name" = "${var.aws_prefix}${var.aws_postfix}" }, var.volume_tags) : null
 }

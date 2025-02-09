@@ -3,9 +3,9 @@ resource "yandex_compute_instance" "this" {
   count = var.yc_create ? 1 : 0
 
   platform_id               = var.vm_vcpu_type
-  name                      = "${var.prefix}${var.postfix}"
+  name                      = "${var.yc_prefix}${var.yc_postfix}"
   description               = var.description
-  hostname                  = "${var.prefix}${var.postfix}.${var.domain_name}"
+  hostname                  = "${var.yc_prefix}${var.yc_postfix}.${var.domain_name}"
   allow_stopping_for_update = var.allow_stopping_for_update
   network_acceleration_type = var.network_acceleration_type
   service_account_id        = var.service_account_id
@@ -104,7 +104,7 @@ resource "yandex_compute_instance" "this" {
   }
 
   dynamic "metadata_options" {
-    for_each = length(var.metadata_options) > 0 ? [var.metadata_options] : []
+    for_each = length(var.yc_metadata_options) > 0 ? [var.yc_metadata_options] : []
     content {
       aws_v1_http_endpoint = lookup(var.metadata_options, "aws_v1_http_endpoint", 1)
       aws_v1_http_token    = lookup(var.metadata_options, "aws_v1_http_token", 2)
@@ -121,7 +121,7 @@ resource "yandex_compute_instance" "this" {
 
 
   dynamic "network_interface" {
-    for_each = var.network_interface
+    for_each = var.yc_network_interface
     content {
       subnet_id          = network_interface.value.subnet_id
       security_group_ids = try(network_interface.value.security_group_ids, [])
