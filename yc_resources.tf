@@ -64,7 +64,7 @@ resource "yandex_compute_instance" "this" {
     disk_id     = try(var.boot_disk.disk_id, null)
 
     initialize_params {
-      image_id    = data.yandex_compute_image.image.id
+      image_id    = data.yandex_compute_image.image[0].id
       size        = try(var.boot_disk.initialize_params.size, null)
       type        = try(var.boot_disk.initialize_params.type, null)
       name        = try(var.boot_disk.initialize_params.name, null)

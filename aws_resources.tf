@@ -166,6 +166,6 @@ resource "aws_instance" "this" {
     delete = try(var.timeouts.delete, null)
   }
 
-  tags        = merge({ "Name" = "${var.aws_prefix}${var.aws_postfix}" }, var.instance_tags, var.tags)
+  tags        = merge({ "Name" = "${var.aws_prefix}${var.aws_postfix}" }, var.instance_tags, var.tags, local.labels)
   volume_tags = var.enable_volume_tags ? merge({ "Name" = "${var.aws_prefix}${var.aws_postfix}" }, var.volume_tags) : null
 }

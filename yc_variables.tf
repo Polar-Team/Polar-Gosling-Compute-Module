@@ -12,7 +12,7 @@ variable "source_image_id" {
   description = "(Optional) The ID of a specific image."
 }
 
-##################Resourceses variables##############################
+##################Resourceses variables#####################################
 
 
 variable "creation_zone" {
@@ -41,6 +41,12 @@ variable "yc_postfix" {
     error_message = "Not valid value for postfix. Need 3 digits"
 
   }
+}
+
+variable "owner" {
+  type        = string
+  description = "(Optional) Owner tag for instance."
+
 }
 
 variable "domain_name" {
@@ -318,4 +324,11 @@ variable "timeout" {
 variable "cloud-init" {
   type        = string
   description = "(Required) Cloud init config script."
+}
+
+variable "additional_labels" {
+  type        = map(any)
+  description = "(Optional) Additional labels for servers."
+  default     = {}
+
 }

@@ -1,5 +1,12 @@
 locals {
 
+  labels = merge({
+    created_at = formatdate("DD-MM-YYYY-hh-mm", timestamp()),
+    owner      = var.owner
+    group      = var.group
+    },
+  var.additional_labels)
+
   ami = try(coalesce(var.ami, try(nonsensitive(data.aws_ssm_parameter.this[0].value), null)), null)
 
   ######## Generating Outputs #########
