@@ -9,7 +9,7 @@ variable "ami_ssm_parameter" {
 
 ##################Resourceses variables####################################
 
-variable "create" {
+variable "aws_vm_create" {
   description = "Whether to create an instance"
   type        = bool
   default     = true
@@ -17,18 +17,9 @@ variable "create" {
 
 variable "aws_prefix" {
   type    = string
-  default = "goslingwrk"
+  default = "gosling-runner"
 }
 
-variable "aws_postfix" {
-  type        = string
-  description = "(Mandatory) Unique 3 digit number in yandex cloud for vm"
-  validation {
-    condition     = length(var.aws_postfix) == 3 && can(regex("[0-9]", var.aws_postfix))
-    error_message = "Not valid value for postfix. Need 3 digits"
-
-  }
-}
 
 variable "ami" {
   description = "ID of AMI to use for the instance"
@@ -36,11 +27,6 @@ variable "ami" {
   default     = null
 }
 
-variable "ignore_ami_changes" {
-  description = "Whether changes to the AMI ID changes should be ignored by Terraform. Note - changing this value will result in the replacement of the instance"
-  type        = bool
-  default     = false
-}
 
 variable "associate_public_ip_address" {
   description = "Whether to associate a public IP address with an instance in a VPC"
@@ -290,73 +276,6 @@ variable "cpu_options" {
   description = "Defines CPU options to apply to the instance at launch time."
   type        = any
   default     = {}
-}
-
-variable "cpu_core_count" {
-  description = "Sets the number of CPU cores for an instance" # This option is only supported on creation of instance type that support CPU Options https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html#cpu-options-supported-instances-values
-  type        = number
-  default     = null
-}
-
-variable "cpu_threads_per_core" {
-  description = "Sets the number of CPU threads per core for an instance (has no effect unless cpu_core_count is also set)"
-  type        = number
-  default     = null
-}
-
-# Spot instance request
-variable "create_spot_instance" {
-  description = "Depicts if the instance is a spot instance"
-  type        = bool
-  default     = false
-}
-
-variable "spot_price" {
-  description = "The maximum price to request on the spot market. Defaults to on-demand price"
-  type        = string
-  default     = null
-}
-
-variable "spot_wait_for_fulfillment" {
-  description = "If set, Terraform will wait for the Spot Request to be fulfilled, and will throw an error if the timeout of 10m is reached"
-  type        = bool
-  default     = null
-}
-
-variable "spot_type" {
-  description = "If set to one-time, after the instance is terminated, the spot request will be closed. Default `persistent`"
-  type        = string
-  default     = null
-}
-
-variable "spot_launch_group" {
-  description = "A launch group is a group of spot instances that launch together and terminate together. If left empty instances are launched and terminated individually"
-  type        = string
-  default     = null
-}
-
-variable "spot_block_duration_minutes" {
-  description = "The required duration for the Spot instances, in minutes. This value must be a multiple of 60 (60, 120, 180, 240, 300, or 360)"
-  type        = number
-  default     = null
-}
-
-variable "spot_instance_interruption_behavior" {
-  description = "Indicates Spot instance behavior when it is interrupted. Valid values are `terminate`, `stop`, or `hibernate`"
-  type        = string
-  default     = null
-}
-
-variable "spot_valid_until" {
-  description = "The end date and time of the request, in UTC RFC3339 format(for example, YYYY-MM-DDTHH:MM:SSZ)"
-  type        = string
-  default     = null
-}
-
-variable "spot_valid_from" {
-  description = "The start date and time of the request, in UTC RFC3339 format(for example, YYYY-MM-DDTHH:MM:SSZ)"
-  type        = string
-  default     = null
 }
 
 variable "disable_api_stop" {

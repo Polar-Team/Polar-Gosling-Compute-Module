@@ -12,7 +12,13 @@ variable "source_image_id" {
   description = "(Optional) The ID of a specific image."
 }
 
-##################Resourceses variables#####################################
+##################Resourceses variables##############################
+
+variable "yc_create" {
+  description = "Whether to create an instance"
+  type        = bool
+  default     = true
+}
 
 
 variable "creation_zone" {
@@ -21,40 +27,11 @@ variable "creation_zone" {
 
 }
 
-variable "description" {
-  type        = string
-  default     = null
-  description = "(Optional) Description of the instance"
-
-}
-
 variable "yc_prefix" {
   type    = string
-  default = "goslingwrk"
+  default = "gosling-runner"
 }
 
-variable "yc_postfix" {
-  type        = string
-  description = "(Mandatory) Unique 3 digit number in yandex cloud for vm"
-  validation {
-    condition     = length(var.yc_postfix) == 3 && can(regex("[0-9]", var.yc_postfix))
-    error_message = "Not valid value for postfix. Need 3 digits"
-
-  }
-}
-
-variable "owner" {
-  type        = string
-  description = "(Optional) Owner tag for instance."
-
-}
-
-variable "domain_name" {
-  type        = string
-  description = "Private domain name for vm"
-  default     = "pt.met"
-
-}
 
 variable "vm_vcpu_type" {
   type    = string
@@ -71,7 +48,7 @@ variable "allow_stopping_for_update" {
   type        = bool
   default     = true
   description = <<-EOT
-    (Optional) If true, allows Terraform to stop the instance in order to update its properties. 
+    (Optional) If true, allows Terraform to stop the instance in order to update its properties.
     If you try to update a property that requires stopping the instance without setting this field, the update will fail.
     EOT
 
@@ -108,7 +85,7 @@ variable "service_account_id" {
   description = "(Optional) ID of the service account authorized for this instance."
 }
 
-variable "yc_metadata_options" {
+variable "metadata_options" {
   type        = any
   default     = {}
   description = "(Optional) Options allow user to configure access to instance's metadata"
@@ -185,7 +162,7 @@ variable "boot_disk" {
 
 variable "secondary_disk" {
   description = <<-EOT
-  (Optional) A list of disks to attach to the instance. The structure is documented below. 
+  (Optional) A list of disks to attach to the instance. The structure is documented below.
   Note: The allow_stopping_for_update property must be set to true in order to update this structure.
   The secondary_disk block supports:
 
@@ -233,7 +210,7 @@ variable "filesystem" {
   EOT
 }
 
-variable "yc_network_interface" {
+variable "network_interface" {
   type        = any
   description = <<-EOT
   (Required) Networks to attach to the instance. This can be specified multiple times. The structure is documented below.
@@ -295,18 +272,6 @@ variable "yc_network_interface" {
 
 }
 
-variable "yc_create" {
-  type        = bool
-  default     = null
-  description = "Create vm in yandex cloud"
-}
-
-variable "aws_create" {
-  type        = bool
-  default     = null
-  description = "Create vm in yandex cloud"
-}
-
 
 variable "group" {
   type        = string
@@ -326,9 +291,21 @@ variable "cloud-init" {
   description = "(Required) Cloud init config script."
 }
 
+variable "vault-token" {
+  type        = string
+  default     = null
+  description = "(Optional) Temporary meradata deploy vault token."
+}
+
 variable "additional_labels" {
   type        = map(any)
+  default     = null
   description = "(Optional) Additional labels for servers."
-  default     = {}
 
+}
+
+variable "owner" {
+  type        = string
+  description = "(Optional) Lables with owner markers"
+  default     = "linde-gas-rus-is"
 }

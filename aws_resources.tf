@@ -1,5 +1,20 @@
+resource "random_string" "aws-this" {
+
+  length  = 12
+  special = false
+  lower   = true
+  upper   = false
+
+}
+
+#################################################
+#                                               #
+#         AWS VM provider resources             #
+#                                               #
+#################################################
+
 resource "aws_instance" "this" {
-  count = var.aws_create ? 1 : 0
+  count = var.aws_vm_create ? 1 : 0
 
   ami           = local.ami
   instance_type = var.instance_type
@@ -100,7 +115,7 @@ resource "aws_instance" "this" {
 
     content {
       http_endpoint               = try(metadata_options.value.http_endpoint, "enabled")
-      http_tokens                 = try(metadata_options.value.http_tokens, "optional")
+      http_tokens                 = "required"
       http_put_response_hop_limit = try(metadata_options.value.http_put_response_hop_limit, 1)
       instance_metadata_tags      = try(metadata_options.value.instance_metadata_tags, null)
     }
@@ -166,6 +181,7 @@ resource "aws_instance" "this" {
     delete = try(var.timeouts.delete, null)
   }
 
-  tags        = merge({ "Name" = "${var.aws_prefix}${var.aws_postfix}" }, var.instance_tags, var.tags, local.labels)
-  volume_tags = var.enable_volume_tags ? merge({ "Name" = "${var.aws_prefix}${var.aws_postfix}" }, var.volume_tags) : null
+  tags        = merge({ "Name" = "${var.aws_prefix}-${random_string.aws-this.result}" }, var.instance_tags, var.tags, local.labels)
+  volume_tags = var.enable_volume_tags ? merge({ "Name" = "${var.aws_prefix}-${random_string.aws-this.result}" }, var.volume_tags) : null
 }
+
