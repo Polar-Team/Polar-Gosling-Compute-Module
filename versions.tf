@@ -2,8 +2,8 @@ terraform {
   required_version = ">= 1.3.5"
   required_providers {
     yandex = {
-      source  = "yandex-cloud/yandex"
-      version = ">= 0.100.0"
+      source  = "registry.terraform.io/yandex-cloud/yandex"
+      version = ">= 0.170.0"
     }
     aws = {
       source  = "hashicorp/aws"

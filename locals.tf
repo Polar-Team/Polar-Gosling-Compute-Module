@@ -7,6 +7,8 @@ locals {
     },
   var.additional_labels)
 
+  yc_create_sum = (var.yc_vm_create || var.yc_serverless_create)
+
   ami = try(coalesce(var.ami, try(nonsensitive(data.aws_ssm_parameter.this[0].value), null)), null)
 
   metadata = merge({
@@ -16,7 +18,7 @@ locals {
 
   ######## Generating Outputs #########
 
-  hostname = (var.yc_create ? [
+  hostname = (var.yc_vm_create ? [
     for s in yandex_compute_instance.this : s.hostname
     ][0] :
     [
@@ -24,7 +26,7 @@ locals {
     ][0]
   )
 
-  public_ip = (var.yc_create ? [
+  public_ip = (var.yc_vm_create ? [
     for s in yandex_compute_instance.this : s.network_interface[*].nat_ip_address
     ][0] :
     [
@@ -32,7 +34,7 @@ locals {
     ][0]
   )
 
-  private_ip = (var.yc_create ? [
+  private_ip = (var.yc_vm_create ? [
     for s in yandex_compute_instance.this : s.network_interface[*].ip_address
     ][0] :
     [

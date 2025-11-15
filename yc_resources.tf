@@ -12,6 +12,128 @@ resource "random_string" "yc-this" {
 #                                               #
 #################################################
 
+resource "yandex_serverless_container" "this" {
+
+  count = var.yc_serverless_create ? 1 : 0
+
+  name               = "${var.yc_prefix}-svc-${random_string.yc-this.result}"
+  description        = try(var.serverless_description, null)
+  memory             = var.serverless_memory
+  cores              = try(var.serverless_cores, null)
+  concurrency        = try(var.serverless_concurrency, null)
+  core_fraction      = try(var.serverless_core_fraction, null)
+  execution_timeout  = try(var.serverless_execution_timeout, null)
+  folder_id          = data.yandex_client_config.client[0].folder_id
+  labels             = local.labels
+  service_account_id = var.service_account_id
+
+  dynamic "image" {
+    for_each = flatten([try(var.serverless_image, [])])
+    content {
+      url         = image.value.url
+      command     = try(image.value.command, null)
+      digest      = try(image.value.digest, null)
+      environment = try(image.value.environment, null)
+      work_dir    = try(image.value.work_dir, null)
+    }
+
+  }
+
+  dynamic "connectivity" {
+    for_each = flatten([try(var.serverless_connectivity, [])])
+    content {
+      network_id = connectivity.value.network_id
+    }
+  }
+
+  dynamic "log_options" {
+    for_each = flatten([try(var.serverless_log_options, [])])
+    content {
+      disabled     = try(log_options.value.disabled, null)
+      folder_id    = try(log_options.value.folder_id, null)
+      log_group_id = try(log_options.value.log_group_id, null)
+      min_level    = try(log_options.value.min_level, null)
+    }
+  }
+
+  dynamic "metadata_options" {
+    for_each = flatten([try(var.serverless_metadata_options, [])])
+    content {
+      aws_v1_http_endpoint = lookup(var.serverless_metadata_options, "aws_v1_http_endpoint", 1)
+      gce_http_endpoint    = lookup(var.serverless_metadata_options, "gce_http_endpoint", 1)
+    }
+  }
+
+
+  dynamic "mounts" {
+    for_each = flatten([try(var.serverless_mounts, [])])
+    content {
+      mount_point_path = mounts.value.mount_point_path
+      mode             = try(mounts.value.mode, null)
+      dynamic "ephemeral_disk" {
+        for_each = try([mounts.value.ephemeral_disk], [])
+        content {
+          size_gb       = ephemeral_disk.value.size_gb
+          block_size_kb = try(ephemeral_disk.value.block_size_kb, null)
+        }
+      }
+      dynamic "object_storage" {
+        for_each = try([mounts.value.object_storage], [])
+        content {
+          bucket = object_storage.value.bucket
+          prefix = try(object_storage.value.prefix, null)
+        }
+      }
+    }
+  }
+
+  dynamic "provision_policy" {
+    for_each = flatten([try(var.serverless_provision_policy, [])])
+    content {
+      min_instances = provision_policy.value.min_instances
+    }
+  }
+
+  dynamic "runtime" {
+    for_each = flatten([try(var.serverless_runtime, [])])
+    content {
+      type = runtime.value.type
+    }
+  }
+
+  dynamic "secrets" {
+    for_each = flatten([try(var.serverless_secrets, [])])
+    content {
+      environment_variable = secrets.value.environment_variable
+      id                   = secrets.value.id
+      key                  = secrets.value.key
+      version_id           = secrets.value.version_id
+    }
+  }
+
+  dynamic "async_invocation" {
+    for_each = flatten([try(var.serverless_async_invocation, [])])
+    content {
+      service_account_id = try(async_invocation.value.service_account_id, null)
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      name,
+      labels,
+    ]
+
+    create_before_destroy = true
+  }
+
+  timeouts {
+    create = var.timeout
+    update = var.timeout
+    delete = var.timeout
+  }
+}
+
 #################################################
 #                                               #
 #          YC VM provider resources             #
@@ -20,7 +142,7 @@ resource "random_string" "yc-this" {
 
 resource "yandex_compute_instance" "this" {
 
-  count = var.yc_create ? 1 : 0
+  count = var.yc_vm_create ? 1 : 0
 
   platform_id               = var.vm_vcpu_type
   name                      = "${var.yc_prefix}-${random_string.yc-this.result}"
@@ -30,7 +152,7 @@ resource "yandex_compute_instance" "this" {
   service_account_id        = var.service_account_id
   labels                    = local.labels
   zone                      = var.creation_zone
-
+  folder_id                 = data.yandex_client_config.client[0].folder_id
 
   dynamic "placement_policy" {
     for_each = length(var.placement_policy) > 0 ? var.placement_policy : []

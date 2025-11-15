@@ -8,15 +8,15 @@
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.5 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.66 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.4.3 |
-| <a name="requirement_yandex"></a> [yandex](#requirement\_yandex) | >= 0.100.0 |
+| <a name="requirement_yandex"></a> [yandex](#requirement\_yandex) | >= 0.170.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.92.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.21.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | 3.7.2 |
-| <a name="provider_yandex"></a> [yandex](#provider\_yandex) | 0.127.0 |
+| <a name="provider_yandex"></a> [yandex](#provider\_yandex) | 0.170.0 |
 
 ## Modules
 
@@ -29,9 +29,11 @@ No modules.
 | [aws_instance.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
 | [random_string.aws-this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
 | [random_string.yc-this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
-| [yandex_compute_instance.this](https://registry.terraform.io/providers/yandex-cloud/yandex/latest/docs/resources/compute_instance) | resource |
+| yandex_compute_instance.this | resource |
+| yandex_serverless_container.this | resource |
 | [aws_ssm_parameter.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
-| [yandex_compute_image.image](https://registry.terraform.io/providers/yandex-cloud/yandex/latest/docs/data-sources/compute_image) | data source |
+| yandex_client_config.client | data source |
+| yandex_compute_image.image | data source |
 
 ## Inputs
 
@@ -89,6 +91,21 @@ No modules.
 | <a name="input_scheduling_policy"></a> [scheduling\_policy](#input\_scheduling\_policy) | (Optional) Scheduling policy configuration. The structure is documented below.<br/>The scheduling\_policy block supports:<br/><br/>  preemptible - (Optional) Specifies if the instance is preemptible. Defaults to false. | `any` | `{}` | no |
 | <a name="input_secondary_disk"></a> [secondary\_disk](#input\_secondary\_disk) | (Optional) A list of disks to attach to the instance. The structure is documented below.<br/>Note: The allow\_stopping\_for\_update property must be set to true in order to update this structure.<br/>The secondary\_disk block supports:<br/><br/>  disk\_id - (Required) ID of the disk that is attached to the instance.<br/><br/>  auto\_delete - (Optional) Whether the disk is auto-deleted when the instance is deleted. The default value is false.<br/><br/>  device\_name - (Optional) Name that can be used to access an attached disk under /dev/disk/by-id/.<br/><br/>  mode - (Optional) Type of access to the disk resource. By default, a disk is attached in READ\_WRITE mode. | `list(any)` | `[]` | no |
 | <a name="input_secondary_private_ips"></a> [secondary\_private\_ips](#input\_secondary\_private\_ips) | A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `network_interface block` | `list(string)` | `null` | no |
+| <a name="input_serverless_async_invocation"></a> [serverless\_async\_invocation](#input\_serverless\_async\_invocation) | <pre>(Optional) Config for asynchronous invocations of Yandex Cloud Serverless Container. The structure is documented below.<br/>The async_invocation block supports:<br/>  service_account_id - (Optional) (String) Service account used for async invocation.</pre> | `map(any)` | `{}` | no |
+| <a name="input_serverless_concurrency"></a> [serverless\_concurrency](#input\_serverless\_concurrency) | (Optional) (Number)  Concurrency of Yandex Cloud Serverless Container. | `number` | `null` | no |
+| <a name="input_serverless_connectivity"></a> [serverless\_connectivity](#input\_serverless\_connectivity) | <pre>(Required) The connectivity settings for the serverless instance. The structure is documented below.<br/>The connectivity block supports:<br/>  network_id - (Required) (String) Network the revision will have access to.</pre> | `map(any)` | `{}` | no |
+| <a name="input_serverless_core_fraction"></a> [serverless\_core\_fraction](#input\_serverless\_core\_fraction) | (Optional) (Number) Core fraction (0..100) of the Yandex Cloud Serverless Conatiner. | `number` | `null` | no |
+| <a name="input_serverless_cores"></a> [serverless\_cores](#input\_serverless\_cores) | (Optional) (Number) Core (1+) of the Yandex Cloud Serverless Container. | `number` | `null` | no |
+| <a name="input_serverless_description"></a> [serverless\_description](#input\_serverless\_description) | (Optional) (String) Description of Yandex Cloud Serverless Container. | `string` | `null` | no |
+| <a name="input_serverless_execution_timeout"></a> [serverless\_execution\_timeout](#input\_serverless\_execution\_timeout) | (Optional) (Number) Execution timeout in seconds (duration format) for Yandex Cloud Serverless Container. | `number` | `null` | no |
+| <a name="input_serverless_image"></a> [serverless\_image](#input\_serverless\_image) | <pre>(Required) The image for the serverless instance. The structure is documented below.<br/>The image block supports:<br/>  url - (Required) (String) URL of image that will be deployed as Yandex Cloud Serverless Container.<br/>  args - (Optional) (List of String) List of arguments for Yandex Cloud Serverless Container.<br/>  command - (Optional) (List of String) List of commands for Yandex Cloud Serverless Container.<br/>  digest - (Optional) (String) Digest of image that will be deployed as Yandex Cloud Serverless Container.<br/>           if presented, should be equal to digest that will be resolvet at server side by URL.<br/>           Container will be updated on digest change even if image.0.url stays the same. If field not<br/>           specified then its value will be computed.<br/>  environment - (Optional) (Map of String) A set of key/value environment variables pairs<br/>                for Yandex Cloud Serverless Container. Each key must begin with a letter (A-Z,a-z).<br/>  work_dir - (Optional) (String) Working directory for Yandex Cloud Serverless Container.</pre> | `map(any)` | n/a | yes |
+| <a name="input_serverless_log_options"></a> [serverless\_log\_options](#input\_serverless\_log\_options) | <pre>(Optional) The log options for the serverless instance. The structure is documented below.<br/>The log_options block supports:<br/>  disabled - (Optional) (Boolean) is logging from container disabled.<br/>  folder_id - (Optional) (String) Log entries are written to default log group for specific folder.<br/>  log_group_id - (Optional) (String) Log entries are written to specified log group.<br/>  min_level - (Optional) (String) Minimum log entry level.</pre> | `map(any)` | `{}` | no |
+| <a name="input_serverless_memory"></a> [serverless\_memory](#input\_serverless\_memory) | (Required) (Number) Memory in megabytes (aligned to 128 MB). | `number` | `128` | no |
+| <a name="input_serverless_metadata_options"></a> [serverless\_metadata\_options](#input\_serverless\_metadata\_options) | <pre>(Optional) The metadata options for the serverless instance. The structure is documented below.<br/>The metadata_options block supports:<br/>  aws_v1_http_endpoint - (Number) Enables access to AWS flavored metadata (IMDSv1).<br/>                         Values: 0 - default, 1 - enabled, 2 - disabled.<br/>  gce_http_endpoint - (Number) Enables access to GCE flavored metadata.<br/>                      Values: 0 - default, 1 - enabled, 2 - disabled.</pre> | `map(any)` | `{}` | no |
+| <a name="input_serverless_mounts"></a> [serverless\_mounts](#input\_serverless\_mounts) | <pre>(Optional) The mounts for the serverless instance. The structure is documented below.<br/>The mounts block supports:<br/>  mount_point_path - (Required) (String) Path inside the container to access the directory in which the target<br/>                      is mounted.<br/>  mode - (Required) (String)  Mount's accessibility mode. Valid values are ro and rw.<br/>  ephemeral_disk - (Optional) (Block) Ephemeral disk configuration. The structure is documented below.<br/>  object_storage - (Optional) (Block) Object storage configuration. The structure is documented below.<br/>The ephemeral_disk block supports:<br/>    size_gb - (Required) (Number) Size of the ephemeral disk in GB.<br/>    block_size_kb - (Optional) (Number) Block size of the ephemeral disk in KB.<br/>The object_storage block supports:<br/>    bucket - (Required) (String) Name of the object storage bucket.<br/>    prefix - (Optional) (String) Prefix within the bucket. If you leave this field empty, the entire<br/>             bucket will be mounted.</pre> | `map(any)` | `{}` | no |
+| <a name="input_serverless_provision_policy"></a> [serverless\_provision\_policy](#input\_serverless\_provision\_policy) | <pre>(Optional) The provision policy for the serverless instance. The structure is documented below.<br/>The provision_policy block supports:<br/>  min_instances - (Required) (Number) Minimum number of prepared instances that that are always<br/>                  ready to serve requests.</pre> | `map(any)` | `{}` | no |
+| <a name="input_serverless_runtime"></a> [serverless\_runtime](#input\_serverless\_runtime) | <pre>(Optional) (String) Runtime for Yandex Cloud Serverless Container. The structure is documented below.<br/>The runtime block supports:<br/>  type - (Required) (String) Type of the runtime for Yandex Cloud Serverless Container. Valid values are http and task.</pre> | `map(any)` | `{}` | no |
+| <a name="input_serverless_secrets"></a> [serverless\_secrets](#input\_serverless\_secrets) | <pre>(Optional) The secrets for the serverless instance. The structure is documented below.<br/>The secrets block supports:<br/>  environment_variable - (Required) (String) Container's evironment variable in which secret's value will be stored.<br/>                         Must begin with a letter (A-Z,a-z).<br/>  id - (Required) (String) Secret's ID.<br/>  key - (Required) (String) Secret's entries key which value will be stored in environment variable.<br/>  version_id - (Optional) (String) Secret's varion ID.</pre> | `map(any)` | `{}` | no |
 | <a name="input_service_account_id"></a> [service\_account\_id](#input\_service\_account\_id) | (Optional) ID of the service account authorized for this instance. | `string` | `null` | no |
 | <a name="input_source_dest_check"></a> [source\_dest\_check](#input\_source\_dest\_check) | Controls if traffic is routed to the instance when the destination address does not match the instance. Used for NAT or VPNs | `bool` | `null` | no |
 | <a name="input_source_image_family"></a> [source\_image\_family](#input\_source\_image\_family) | (Optional) The family name of an image. Used to search the latest image in a family. | `string` | `"ubuntu-2004-lts"` | no |
@@ -107,8 +124,9 @@ No modules.
 | <a name="input_vm_vcpu_type"></a> [vm\_vcpu\_type](#input\_vm\_vcpu\_type) | n/a | `string` | `"standard-v2"` | no |
 | <a name="input_volume_tags"></a> [volume\_tags](#input\_volume\_tags) | A mapping of tags to assign to the devices created by the instance at launch time | `map(string)` | `{}` | no |
 | <a name="input_vpc_security_group_ids"></a> [vpc\_security\_group\_ids](#input\_vpc\_security\_group\_ids) | A list of security group IDs to associate with | `list(string)` | `null` | no |
-| <a name="input_yc_create"></a> [yc\_create](#input\_yc\_create) | Whether to create an instance | `bool` | `true` | no |
 | <a name="input_yc_prefix"></a> [yc\_prefix](#input\_yc\_prefix) | n/a | `string` | `"gosling-runner"` | no |
+| <a name="input_yc_serverless_create"></a> [yc\_serverless\_create](#input\_yc\_serverless\_create) | Whether to create a serverless instance | `bool` | `false` | no |
+| <a name="input_yc_vm_create"></a> [yc\_vm\_create](#input\_yc\_vm\_create) | Whether to create an instance | `bool` | `true` | no |
 
 ## Outputs
 

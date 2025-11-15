@@ -1,4 +1,8 @@
-##################Data variables###########################################
+#################################################
+#                                               #
+#               YC VM variables                 #
+#                                               #
+#################################################
 
 variable "source_image_family" {
   type        = string
@@ -12,9 +16,8 @@ variable "source_image_id" {
   description = "(Optional) The ID of a specific image."
 }
 
-##################Resourceses variables##############################
 
-variable "yc_create" {
+variable "yc_vm_create" {
   description = "Whether to create an instance"
   type        = bool
   default     = true
@@ -76,13 +79,6 @@ variable "vm_ram_qty" {
   type        = number
   default     = 2
   description = "(Required) Memory size in GB."
-}
-
-
-variable "service_account_id" {
-  type        = string
-  default     = null
-  description = "(Optional) ID of the service account authorized for this instance."
 }
 
 variable "metadata_options" {
@@ -297,6 +293,234 @@ variable "vault-token" {
   description = "(Optional) Temporary meradata deploy vault token."
 }
 
+#################################################
+#                                               #
+#           YC Serverless variables             #
+#                                               #
+#################################################
+
+variable "yc_serverless_create" {
+  description = "Whether to create a serverless instance"
+  type        = bool
+  default     = false
+}
+
+variable "serverless_image" {
+  type        = map(any)
+  description = <<-EOT
+  ```
+  (Required) The image for the serverless instance. The structure is documented below.
+  The image block supports:
+    url - (Required) (String) URL of image that will be deployed as Yandex Cloud Serverless Container.
+    args - (Optional) (List of String) List of arguments for Yandex Cloud Serverless Container.
+    command - (Optional) (List of String) List of commands for Yandex Cloud Serverless Container.
+    digest - (Optional) (String) Digest of image that will be deployed as Yandex Cloud Serverless Container.
+             if presented, should be equal to digest that will be resolvet at server side by URL.
+             Container will be updated on digest change even if image.0.url stays the same. If field not
+             specified then its value will be computed.
+    environment - (Optional) (Map of String) A set of key/value environment variables pairs
+                  for Yandex Cloud Serverless Container. Each key must begin with a letter (A-Z,a-z).
+    work_dir - (Optional) (String) Working directory for Yandex Cloud Serverless Container.
+  ```
+  EOT
+}
+
+variable "serverless_connectivity" {
+  type        = map(any)
+  default     = {}
+  description = <<-EOT
+  ```
+  (Required) The connectivity settings for the serverless instance. The structure is documented below.
+  The connectivity block supports:
+    network_id - (Required) (String) Network the revision will have access to.
+  ```
+  EOT
+}
+
+variable "serverless_log_options" {
+  type        = map(any)
+  default     = {}
+  description = <<-EOT
+  ```
+  (Optional) The log options for the serverless instance. The structure is documented below.
+  The log_options block supports:
+    disabled - (Optional) (Boolean) is logging from container disabled.
+    folder_id - (Optional) (String) Log entries are written to default log group for specific folder.
+    log_group_id - (Optional) (String) Log entries are written to specified log group.
+    min_level - (Optional) (String) Minimum log entry level.
+  ```
+  EOT
+}
+
+variable "serverless_metadata_options" {
+  type        = map(any)
+  default     = {}
+  description = <<-EOT
+  ```
+  (Optional) The metadata options for the serverless instance. The structure is documented below.
+  The metadata_options block supports:
+    aws_v1_http_endpoint - (Number) Enables access to AWS flavored metadata (IMDSv1).
+                           Values: 0 - default, 1 - enabled, 2 - disabled.
+    gce_http_endpoint - (Number) Enables access to GCE flavored metadata.
+                        Values: 0 - default, 1 - enabled, 2 - disabled.
+  ```
+  EOT
+
+  validation {
+    condition = (
+      contains([0, 1, 2], lookup(var.serverless_metadata_options, "aws_v1_http_endpoint", 0)) &&
+      contains([0, 1, 2], lookup(var.serverless_metadata_options, "gce_http_endpoint", 0))
+    ) || var.serverless_metadata_options == {}
+    error_message = "Only three possible values could be inputed for aws_v1_http_endpoint and gce_http_endpoint - 0, 1, 2"
+  }
+}
+
+variable "serverless_mounts" {
+  type        = map(any)
+  default     = {}
+  description = <<-EOT
+  ```
+  (Optional) The mounts for the serverless instance. The structure is documented below.
+  The mounts block supports:
+    mount_point_path - (Required) (String) Path inside the container to access the directory in which the target
+                        is mounted.
+    mode - (Required) (String)  Mount's accessibility mode. Valid values are ro and rw.
+    ephemeral_disk - (Optional) (Block) Ephemeral disk configuration. The structure is documented below.
+    object_storage - (Optional) (Block) Object storage configuration. The structure is documented below.
+  The ephemeral_disk block supports:
+      size_gb - (Required) (Number) Size of the ephemeral disk in GB.
+      block_size_kb - (Optional) (Number) Block size of the ephemeral disk in KB.
+  The object_storage block supports:
+      bucket - (Required) (String) Name of the object storage bucket.
+      prefix - (Optional) (String) Prefix within the bucket. If you leave this field empty, the entire
+               bucket will be mounted.
+  ```
+  EOT
+  validation {
+    condition = (
+      length(try(var.serverless_mounts["ephemeral_disk"], [])) <= 1 &&
+      length(try(var.serverless_mounts["object_storage"], [])) <= 1
+      ) && (
+      try(var.serverless_mounts["mode"], "rw") == "ro" || try(var.serverless_mounts["mode"], "rw") == "rw"
+    ) || var.serverless_mounts == {}
+    error_message = <<-EOT
+      Only one of ephemeral_disk or object_storage can be specified per mount.
+      Also, only two possible values could be inputed for mode - ro, rw.
+    EOT
+  }
+}
+
+variable "serverless_provision_policy" {
+  type        = map(any)
+  default     = {}
+  description = <<-EOT
+  ```
+  (Optional) The provision policy for the serverless instance. The structure is documented below.
+  The provision_policy block supports:
+    min_instances - (Required) (Number) Minimum number of prepared instances that that are always
+                    ready to serve requests.
+  ```
+  EOT
+}
+
+variable "serverless_runtime" {
+  type        = map(any)
+  default     = {}
+  description = <<-EOT
+  ```
+  (Optional) (String) Runtime for Yandex Cloud Serverless Container. The structure is documented below.
+  The runtime block supports:
+    type - (Required) (String) Type of the runtime for Yandex Cloud Serverless Container. Valid values are http and task.
+  ```
+  EOT
+
+  validation {
+    condition = (
+      try(var.serverless_runtime["type"], "http") == "http" ||
+      try(var.serverless_runtime["type"], "http") == "task"
+    ) || var.serverless_runtime == {}
+    error_message = "Only two possible values could be inputed for type - http, task"
+  }
+
+}
+
+variable "serverless_secrets" {
+  type        = map(any)
+  default     = {}
+  description = <<-EOT
+  ```
+  (Optional) The secrets for the serverless instance. The structure is documented below.
+  The secrets block supports:
+    environment_variable - (Required) (String) Container's evironment variable in which secret's value will be stored.
+                           Must begin with a letter (A-Z,a-z).
+    id - (Required) (String) Secret's ID.
+    key - (Required) (String) Secret's entries key which value will be stored in environment variable.
+    version_id - (Optional) (String) Secret's varion ID.
+  ```
+  EOT
+  validation {
+    condition = (
+      length(regexall("^[A-Za-z]", try(var.serverless_secrets["environment_variable"], "A"))) > 0
+    ) || var.serverless_secrets == {}
+    error_message = "Environment variable must begin with a letter (A-Z,a-z)."
+  }
+}
+
+variable "serverless_async_invocation" {
+  type        = map(any)
+  default     = {}
+  description = <<-EOT
+  ```
+  (Optional) Config for asynchronous invocations of Yandex Cloud Serverless Container. The structure is documented below.
+  The async_invocation block supports:
+    service_account_id - (Optional) (String) Service account used for async invocation.
+  ```
+  EOT
+
+}
+
+variable "serverless_description" {
+  type        = string
+  description = "(Optional) (String) Description of Yandex Cloud Serverless Container."
+  default     = null
+}
+
+variable "serverless_memory" {
+  type        = number
+  description = "(Required) (Number) Memory in megabytes (aligned to 128 MB)."
+  default     = 128
+}
+
+variable "serverless_cores" {
+  type        = number
+  description = "(Optional) (Number) Core (1+) of the Yandex Cloud Serverless Container."
+  default     = null
+}
+
+variable "serverless_concurrency" {
+  type        = number
+  description = "(Optional) (Number)  Concurrency of Yandex Cloud Serverless Container."
+  default     = null
+}
+
+variable "serverless_core_fraction" {
+  type        = number
+  description = "(Optional) (Number) Core fraction (0..100) of the Yandex Cloud Serverless Conatiner."
+  default     = null
+}
+
+variable "serverless_execution_timeout" {
+  type        = number
+  description = "(Optional) (Number) Execution timeout in seconds (duration format) for Yandex Cloud Serverless Container."
+  default     = null
+}
+
+#################################################
+#                                               #
+#           Common variables                    #
+#                                               #
+#################################################
+
 variable "additional_labels" {
   type        = map(any)
   default     = null
@@ -309,3 +533,10 @@ variable "owner" {
   description = "(Optional) Lables with owner markers"
   default     = "linde-gas-rus-is"
 }
+
+variable "service_account_id" {
+  type        = string
+  default     = null
+  description = "(Optional) ID of the service account authorized for this instance."
+}
+

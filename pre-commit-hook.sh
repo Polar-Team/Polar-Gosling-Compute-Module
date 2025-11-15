@@ -79,6 +79,6 @@ else
   setup_deps
   cat >.git/hooks/pre-commit <<EOL
 #!/bin/bash
-pre-commit run -a
+export TF_CLI_CONFIG_FILE="./terraform.rc" && pre-commit run -a
 EOL
 fi
