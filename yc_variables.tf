@@ -20,13 +20,14 @@ variable "source_image_id" {
 variable "yc_vm_create" {
   description = "Whether to create an instance"
   type        = bool
-  default     = true
+  default     = false
 }
 
 
 variable "creation_zone" {
   type        = string
   description = "(Mandatory) Zone where resources will be created"
+  default     = "ru-central1-a"
 
 }
 
@@ -154,6 +155,7 @@ variable "boot_disk" {
 
   EOT
   type        = any
+  default     = {}
 }
 
 variable "secondary_disk" {
@@ -206,8 +208,9 @@ variable "filesystem" {
   EOT
 }
 
-variable "network_interface" {
+variable "yc_network_interface" {
   type        = any
+  default     = {}
   description = <<-EOT
   (Required) Networks to attach to the instance. This can be specified multiple times. The structure is documented below.
   The network_interface block supports:
@@ -283,6 +286,8 @@ variable "timeout" {
 }
 
 variable "cloud-init" {
+  nullable    = true
+  default     = null
   type        = string
   description = "(Required) Cloud init config script."
 }
@@ -306,7 +311,17 @@ variable "yc_serverless_create" {
 }
 
 variable "serverless_image" {
-  type        = map(any)
+  type = object({
+    url         = string
+    args        = optional(list(string))
+    command     = optional(list(string))
+    digest      = optional(string)
+    environment = optional(map(string))
+    work_dir    = optional(string)
+  })
+  default = {
+    url = "dummy"
+  }
   description = <<-EOT
   ```
   (Required) The image for the serverless instance. The structure is documented below.
@@ -510,7 +525,7 @@ variable "serverless_core_fraction" {
 }
 
 variable "serverless_execution_timeout" {
-  type        = number
+  type        = string
   description = "(Optional) (Number) Execution timeout in seconds (duration format) for Yandex Cloud Serverless Container."
   default     = null
 }

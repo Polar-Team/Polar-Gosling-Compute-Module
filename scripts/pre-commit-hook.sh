@@ -1,17 +1,21 @@
 #!/bin/bash
 git init
-export VERSION="v1.103.0"
-export REPO="https://github.com/antonbabenko/pre-commit-terraform"
+export VERSION="v2.2.2"
+export REPO="https://github.com/tofuutils/pre-commit-opentofu"
 
 cat >.pre-commit-config.yaml <<EOL
 repos:
 - repo: $REPO
   rev: $VERSION # Get the latest from: $REPO/releases
   hooks:
-    - id: terraform_fmt
-    - id: terraform_validate
-    - id: terraform_checkov
-    - id: terraform_tflint
+    - id: tofu_fmt
+    - id: tofu_validate
+      exclude: 'tests/*'
+      args:
+        - --tf-init-args=-upgrade
+    - id: tofu_checkov
+    - id: tofu_tflint
+      exclude: 'tests/*'
       args:
         - --args=--enable-rule=terraform_deprecated_interpolation
         - --args=--enable-rule=terraform_deprecated_index
@@ -24,7 +28,8 @@ repos:
         - --args=--enable-rule=terraform_unused_declarations
         - --args=--enable-rule=terraform_unused_required_providers
         - --args=--enable-rule=terraform_workspace_remote
-    - id: terraform_docs
+    - id: tofu_docs
+      exclude: 'tests/*'
       args:
         - --hook-config=--path-to-file=README.md        # Valid UNIX path. I.e. ../TFDOC.md or docs/README.md etc.
         - --hook-config=--add-to-existing-file=true     # Boolean. true or false

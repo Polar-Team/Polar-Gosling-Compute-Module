@@ -66,7 +66,7 @@ resource "yandex_serverless_container" "this" {
 
 
   dynamic "mounts" {
-    for_each = flatten([try(var.serverless_mounts, [])])
+    for_each = length(var.serverless_mounts) > 0 ? [var.serverless_mounts] : []
     content {
       mount_point_path = mounts.value.mount_point_path
       mode             = try(mounts.value.mode, null)
@@ -102,7 +102,7 @@ resource "yandex_serverless_container" "this" {
   }
 
   dynamic "secrets" {
-    for_each = flatten([try(var.serverless_secrets, [])])
+    for_each = length(var.serverless_secrets) > 0 ? [var.serverless_secrets] : []
     content {
       environment_variable = secrets.value.environment_variable
       id                   = secrets.value.id
@@ -261,7 +261,7 @@ resource "yandex_compute_instance" "this" {
 
 
   dynamic "network_interface" {
-    for_each = var.network_interface
+    for_each = var.yc_network_interface
     content {
       subnet_id          = network_interface.value.subnet_id
       security_group_ids = try(network_interface.value.security_group_ids, [])
