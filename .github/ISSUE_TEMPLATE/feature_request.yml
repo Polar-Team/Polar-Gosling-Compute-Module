@@ -1,0 +1,82 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for the module
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Please fill out this form to help us understand your request.
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Description
+      description: A clear and concise description of the feature you'd like to see.
+      placeholder: Describe the feature you want
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe the use case or problem this feature would solve.
+      placeholder: Explain why this feature is needed
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe how you envision this feature working.
+      placeholder: How should this feature work?
+    validations:
+      required: false
+
+  - type: textarea
+    id: example-config
+    attributes:
+      label: Example Configuration
+      description: If applicable, provide an example of how the feature would be used in Terraform configuration.
+      placeholder: |
+        module "example" {
+          source = "..."
+          new_feature = "value"
+          ...
+        }
+      render: hcl
+    validations:
+      required: false
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      description: Which provider should this feature apply to?
+      options:
+        - AWS
+        - Yandex Cloud
+        - Both
+        - Not provider-specific
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+      placeholder: Describe any alternatives you've considered
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples about the feature request.
+      placeholder: Any additional information that might help
+    validations:
+      required: false

@@ -1,0 +1,112 @@
+name: Bug Report
+description: Report a bug or issue with the Terraform module
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out this form to help us understand and fix the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Tell us what happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Tell us what you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Tell us what actually happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: terraform-config
+    attributes:
+      label: Terraform Configuration
+      description: Please provide the relevant Terraform configuration that reproduces the issue.
+      placeholder: |
+        module "example" {
+          source = "..."
+          ...
+        }
+      render: hcl
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Run 'terraform apply'
+        2. Check output
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: terraform-output
+    attributes:
+      label: Terraform Output
+      description: Please provide the relevant Terraform output or error messages.
+      placeholder: Paste terraform output here
+      render: shell
+    validations:
+      required: false
+
+  - type: input
+    id: terraform-version
+    attributes:
+      label: Terraform Version
+      description: What version of Terraform are you using?
+      placeholder: e.g., 1.5.0
+    validations:
+      required: true
+
+  - type: input
+    id: module-version
+    attributes:
+      label: Module Version
+      description: What version of this module are you using?
+      placeholder: e.g., v1.0.0 or commit SHA
+    validations:
+      required: false
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      description: Which provider is affected?
+      options:
+        - AWS
+        - Yandex Cloud
+        - Both
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here, such as screenshots, logs, or environment details.
+      placeholder: Any additional information that might help
+    validations:
+      required: false
