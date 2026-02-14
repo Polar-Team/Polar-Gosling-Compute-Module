@@ -2,54 +2,36 @@ data "external" "os" {
   program = ["bash", "${path.module}/detect.sh"]
 }
 
-data "external" "registry_id" {
-  program    = ["yc", "container", "registry", "get", "test-registry", "--format", "json"]
-  depends_on = [yandex_container_registry.test_registry]
+data "yandex_vpc_network" "test_network" {
+  name = "test-network"
 }
 
-
 data "yandex_client_config" "client" {}
+
 
 locals {
   docker_image_upload_cmd = <<-EOF
   docker login cr.yandex --username IAM --password $(yc iam create-token);
   docker pull nginx:latest;
-  docker tag nginx:latest cr.yandex/${yandex_container_repository.test_repository.name}:latest;
-  docker push cr.yandex/${yandex_container_repository.test_repository.name}:latest;
-  docker image rm  -f cr.yandex/${yandex_container_repository.test_repository.name}:latest;
+  docker tag nginx:latest ${var.test_repository_link}:latest;
+  docker push ${var.test_repository_link}:latest;
+  docker image rm  -f ${var.test_repository_link}:latest;
+  docker image rm -f nginx:latest;
   EOF
   docker_interpreter      = data.external.os.result.os == "Windows" ? ["PowerShell", "-Command"] : ["bash", "-c"]
 }
 
-
-resource "yandex_vpc_network" "test_network_2" {
-  name = "test-network-2"
-}
-
-resource "yandex_container_registry" "test_registry" {
-  name = "test-registry"
-}
-
-resource "yandex_container_repository" "test_repository" {
-  name = "${yandex_container_registry.test_registry.id}/test-repository"
+variable "test_repository_link" {
+  type    = string
+  default = "cr.yandex/crpkv7edjchv2v68ro2g/test-nginx-container"
 }
 
 resource "null_resource" "upload_docker_image" {
+
   provisioner "local-exec" {
     command     = chomp(replace(local.docker_image_upload_cmd, "\r\n", "\n"))
     interpreter = local.docker_interpreter
   }
-  provisioner "local-exec" {
-    when    = destroy
-    command = <<-EOT
-    $REGISTRY=$(yc container registry get test-registry --format json | jq .id);
-    $CONTAINER=$(yc container image get $REGISTRY/
-    yc container image delete $REGISTRY/test-repository:latest
-    EOT
-  }
-
-
-  depends_on = [yandex_container_repository.test_repository]
 }
 
 resource "yandex_iam_service_account" "serverless_sa" {
@@ -67,9 +49,10 @@ resource "yandex_resourcemanager_folder_iam_member" "serverless_permissions" {
 module "yc_test_serverless" {
   source               = "../../"
   yc_serverless_create = true
+  service_account_id   = yandex_iam_service_account.serverless_sa.id
 
   serverless_image = {
-    url     = "cr.yandex/${yandex_container_repository.test_repository.name}:latest"
+    url     = "${var.test_repository_link}:latest"
     command = ["/bin/sh", "-c", "echo Hello, OpenTofu! && sleep 3600"]
     environment = {
       ENV_VAR_1 = "value1"
@@ -78,7 +61,7 @@ module "yc_test_serverless" {
   }
 
   serverless_connectivity = {
-    network_id = yandex_vpc_network.test_network_2.id
+    network_id = data.yandex_vpc_network.test_network.id
   }
 
   serverless_description       = "Test Serverless Function created by OpenTofu"
@@ -100,6 +83,10 @@ module "yc_test_serverless" {
     environment = "test"
     purpose     = "opentofu-yc-serverless-test"
   }
-  depends_on = [null_resource.upload_docker_image]
+
+  depends_on = [
+    null_resource.upload_docker_image,
+    yandex_resourcemanager_folder_iam_member.serverless_permissions
+  ]
 
 }

@@ -1,15 +1,16 @@
-output "vm_hostname" {
+output "hostname" {
   value = local.hostname
 }
 
-output "vm_public_ip" {
+output "public_ip" {
   value = local.public_ip
 }
 
-output "vm_private_ip" {
+output "private_ip" {
   value = local.private_ip
 }
 
-output "vm_id" {
+output "id" {
   value = local.id
 }
+

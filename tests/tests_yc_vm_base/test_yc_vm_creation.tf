@@ -1,11 +1,11 @@
-resource "yandex_vpc_network" "test_network_1" {
-  name = "test-network-1"
+data "yandex_vpc_network" "test_network" {
+  name = "test-network"
 }
 
 resource "yandex_vpc_subnet" "test_subnet" {
   name           = "test-subnet"
   zone           = "ru-central1-a"
-  network_id     = yandex_vpc_network.test_network_1.id
+  network_id     = data.yandex_vpc_network.test_network.id
   v4_cidr_blocks = ["10.2.0.0/24"]
 }
 

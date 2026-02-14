@@ -219,12 +219,19 @@ locals {
   ])
   ######## Generating Outputs #########
 
-  hostname = (local.vm_creation_sum ? (var.yc_vm_create ? [
-    for s in yandex_compute_instance.this : s.hostname
-    ][0] :
-    [
-      for s in aws_instance.this : s.private_dns
-    ][0]) : ["serverless"][0]
+  hostname = (local.vm_creation_sum ?
+    (var.yc_vm_create ? [
+      for s in yandex_compute_instance.this : s.hostname
+      ][0] :
+      [
+        for s in aws_instance.this : s.private_dns
+    ][0]) :
+    (var.yc_serverless_create ? [
+      for s in yandex_serverless_container.this : s.name
+      ][0] :
+      [
+        for s in aws_ecs_task_definition.this : lookup(s.tags, "Name", "noname")
+    ][0])
   )
 
   public_ip = (local.vm_creation_sum ? (var.yc_vm_create ? [
@@ -248,7 +255,13 @@ locals {
     ][0] :
     [
       for s in aws_instance.this : s.id
-    ][0]) : ["serverless"][0]
+    ][0]) :
+    (var.yc_serverless_create ? [
+      for s in yandex_serverless_container.this : s.id
+      ][0] :
+      [
+        for s in aws_ecs_task_definition.this : s.id
+    ][0])
   )
 
 }

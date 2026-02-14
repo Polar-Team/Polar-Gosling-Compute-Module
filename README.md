@@ -398,8 +398,8 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_vm_hostname"></a> [vm\_hostname](#output\_vm\_hostname) | n/a |
-| <a name="output_vm_id"></a> [vm\_id](#output\_vm\_id) | n/a |
-| <a name="output_vm_private_ip"></a> [vm\_private\_ip](#output\_vm\_private\_ip) | n/a |
-| <a name="output_vm_public_ip"></a> [vm\_public\_ip](#output\_vm\_public\_ip) | n/a |
+| <a name="output_hostname"></a> [hostname](#output\_hostname) | n/a |
+| <a name="output_id"></a> [id](#output\_id) | n/a |
+| <a name="output_private_ip"></a> [private\_ip](#output\_private\_ip) | n/a |
+| <a name="output_public_ip"></a> [public\_ip](#output\_public\_ip) | n/a |
 <!-- END OF PRE-COMMIT-OPENTOFU DOCS HOOK -->
