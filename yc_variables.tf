@@ -546,7 +546,7 @@ variable "additional_labels" {
 variable "owner" {
   type        = string
   description = "(Optional) Lables with owner markers"
-  default     = "linde-gas-rus-is"
+  default     = "polar-team"
 }
 
 variable "service_account_id" {

@@ -21,7 +21,6 @@ variable "aws_prefix" {
   default = "gosling-runner"
 }
 
-
 variable "ami" {
   description = "ID of AMI to use for the instance"
   type        = string

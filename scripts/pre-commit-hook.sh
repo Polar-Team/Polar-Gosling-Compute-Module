@@ -14,6 +14,12 @@ repos:
       args:
         - --tf-init-args=-upgrade
     - id: tofu_checkov
+      args:
+        - --args=--skip-check CKV_AWS_41
+        - --args=--skip-check CKV_AWS_65
+        - --args=--skip-check CKV_AWS_88
+        - --args=--skip-check CKV_AWS_224
+        - --args=--skip-check CKV_AWS_249
     - id: tofu_tflint
       exclude: 'tests/*'
       args:

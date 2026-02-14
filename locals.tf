@@ -224,7 +224,7 @@ locals {
       for s in yandex_compute_instance.this : s.hostname
       ][0] :
       [
-        for s in aws_instance.this : s.private_dns
+        for s in aws_instance.this : lookup(s.tags, "Name", "noname")
     ][0]) :
     (var.yc_serverless_create ? [
       for s in yandex_serverless_container.this : s.name
