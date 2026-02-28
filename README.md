@@ -217,9 +217,9 @@ No modules.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.28.0 |
-| <a name="provider_random"></a> [random](#provider\_random) | 3.8.0 |
-| <a name="provider_yandex"></a> [yandex](#provider\_yandex) | 0.178.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.33.0 |
+| <a name="provider_random"></a> [random](#provider\_random) | 3.8.1 |
+| <a name="provider_yandex"></a> [yandex](#provider\_yandex) | 0.188.0 |
 
 ## Modules
 

@@ -290,7 +290,7 @@ resource "yandex_compute_instance" "this" {
         }
       }
       dynamic "nat_dns_record" {
-        for_each = try([network_interface.value.at_dns_record], [])
+        for_each = try([network_interface.value.nat_dns_record], [])
         content {
           fqdn        = try(nat_dns_record.value.fqdn, null)
           dns_zone_id = try(nat_dns_record.value.dns_zone_id, null)
