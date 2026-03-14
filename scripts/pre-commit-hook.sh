@@ -44,10 +44,13 @@ EOL
 
 function setup_deps {
 
+  # Ensure ~/.local/bin is in PATH (pip installs checkov here)
+  export PATH="$HOME/.local/bin:$PATH"
+
   # Install pre-commit if not already installed
   if ! command -v pre-commit &>/dev/null; then
     echo -e "\e[33mpre-commit could not be found, installing...\e[0m"
-    sudo pip install pre-commit
+    pip install pre-commit --break-system-packages
   else
     echo -e "\033[0;32mpre-commit is already installed\033[0m"
   fi
@@ -63,7 +66,7 @@ function setup_deps {
   # Install checkov if not already installed
   if ! command -v checkov &>/dev/null; then
     echo -e "\e[33mcheckov could not be found, installing...\e[0m"
-    sudo pip install checkov
+    sudo pip3 install -U checkov --break-system-packages --ignore-installed
   else
     echo -e "\033[0;32mcheckov is already installed\033[0m"
   fi
@@ -71,12 +74,26 @@ function setup_deps {
   # Install terraform_docs
   if ! command -v terraform-docs &>/dev/null; then
     echo -e "\e[33mterraform-docs could not be found, installing...\e[0m"
-    sudo curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/releases/terraform-docs-v0.16.0-linux-amd64.tar.gz &&
-      sudo tar -xzf terraform-docs.tar.gz &&
-      sudo chmod +x terraform-docs &&
-      sudo mv terraform-docs /bin/terraform-docs
+    curl -sSLo ./terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.19.0/terraform-docs-v0.19.0-linux-amd64.tar.gz &&
+      tar -xzf terraform-docs.tar.gz &&
+      chmod +x terraform-docs &&
+      sudo mv terraform-docs /usr/local/bin/terraform-docs &&
+      rm -f terraform-docs.tar.gz
   else
     echo -e "\033[0;32mterraform-docs is already installed\033[0m"
+  fi
+
+  # Install OpenTofu (tofu) if not already installed
+  if ! command -v tofu &>/dev/null; then
+    echo -e "\e[33mtofu could not be found, installing...\e[0m"
+    TOFU_VERSION=$(curl -sSL https://api.github.com/repos/opentofu/opentofu/releases/latest | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/')
+    curl -sSLo ./tofu.tar.gz "https://github.com/opentofu/opentofu/releases/download/v${TOFU_VERSION}/tofu_${TOFU_VERSION}_linux_amd64.tar.gz" &&
+      tar -xzf tofu.tar.gz tofu &&
+      chmod +x tofu &&
+      sudo mv tofu /usr/local/bin/tofu &&
+      rm -f tofu.tar.gz
+  else
+    echo -e "\033[0;32mtofu is already installed ($(tofu version | head -1))\033[0m"
   fi
 }
 
