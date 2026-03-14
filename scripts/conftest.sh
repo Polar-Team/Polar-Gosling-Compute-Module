@@ -3,14 +3,8 @@
 # Obtain temporary AWS credentials using AWS STS
 
 REGION=${1:-"us-east-1"}
-AWS_CREDENTIALS=$(aws sts get-session-token --duration-seconds 3600)
-AWS_KEY_ID=$("${AWS_CREDENTIALS}" | jq -r '.Credentials.AccessKeyId')
-AWS_SECRET_KEY=$("${AWS_CREDENTIALS}" | jq -r '.Credentials.SecretAccessKey')
-AWS_SESSION_TOKEN=$("${AWS_CREDENTIALS}" | jq -r '.Credentials.SessionToken')
+aws sso login --prfile "${AWS_PROFILE}"
 AWS_REGION="${REGION}"
-export AWS_KEY_ID
-export AWS_SECRET_KEY
-export AWS_SESSION_TOKEN
 export AWS_REGION
 
 YC_TOKEN=$(yc iam create-token)

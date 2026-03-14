@@ -1,0 +1,132 @@
+name: Check
+
+on: [pull_request]
+
+
+jobs:
+  pre-commit:
+    name: Pre-commit Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: latest
+
+      - name: Install tflint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Install terraform-docs
+        run: |
+          curl -sSLo terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.19.0/terraform-docs-v0.19.0-linux-amd64.tar.gz
+          tar -xzf terraform-docs.tar.gz
+          chmod +x terraform-docs
+          sudo mv terraform-docs /usr/local/bin/terraform-docs
+          rm -f terraform-docs.tar.gz
+
+      - name: Install checkov and pre-commit
+        run: pip install checkov pre-commit --break-system-packages
+
+      - name: Run pre-commit
+        run: |
+          export TF_CLI_CONFIG_FILE="./terraform.rc"
+          pre-commit run -a
+
+  test-validation:
+    name: Tests / Validation (mock)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: latest
+
+      - name: tofu init
+        working-directory: tests/tests_validation
+        run: tofu init -upgrade
+
+      - name: tofu test
+        working-directory: tests/tests_validation
+        run: TF_CLI_CONFIG_FILE="./terraform.rc" tofu test -verbose
+
+  test-aws:
+    name: Tests / AWS
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - tests_aws_ecs_base
+          - tests_aws_vm_base
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: latest
+
+      - name: tofu init
+        working-directory: tests/${{ matrix.suite }}
+        run: tofu init -upgrade
+
+      - name: tofu test
+        working-directory: tests/${{ matrix.suite }}
+        run: TF_CLI_CONFIG_FILE="./terraform.rc" tofu test -verbose
+
+  test-yc:
+    name: Tests / Yandex Cloud
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      YC_CLOUD_ID: ${{ secrets.YC_CLOUD_ID }}
+      YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - tests_yc_vm_base
+          - tests_yc_serverless_base
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Yandex Cloud credentials (OIDC)
+        id: yc-auth
+        uses: yc-actions/yc-iam-token@v1
+        with:
+          workload-identity-provider: ${{ secrets.YC_WORKLOAD_IDENTITY_PROVIDER }}
+          service-account-id: ${{ secrets.YC_SA_ID }}
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: latest
+
+      - name: tofu init
+        working-directory: tests/${{ matrix.suite }}
+        env:
+          YC_TOKEN: ${{ steps.yc-auth.outputs.token }}
+        run: tofu init -upgrade
+
+      - name: tofu test
+        working-directory: tests/${{ matrix.suite }}
+        env:
+          YC_TOKEN: ${{ steps.yc-auth.outputs.token }}
+        run: TF_CLI_CONFIG_FILE="./terraform.rc" tofu test -verbose

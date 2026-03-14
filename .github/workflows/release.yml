@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+  id-token: write   # cosign keyless signing + SLSA provenance
+  attestations: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history for changelog
+
+      - name: Generate changelog
+        id: changelog
+        uses: orhun/git-cliff-action@v3
+        with:
+          config: .github/cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: CHANGELOG_RELEASE.md
+
+      - name: Package module
+        run: |
+          zip -r polar-gosling-compute-module.zip . \
+            --exclude "*.git*" \
+            --exclude "tests/*" \
+            --exclude "scripts/*" \
+            --exclude ".github/*" \
+            --exclude ".terraform/*" \
+            --exclude ".terraform.lock.hcl" \
+            --exclude "*.rc"
+
+      - name: Generate artifact hash
+        id: hash
+        run: |
+          sha256sum polar-gosling-compute-module.zip > polar-gosling-compute-module.zip.sha256
+          echo "digest=sha256:$(sha256sum polar-gosling-compute-module.zip | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign artifact (keyless OIDC)
+        run: |
+          cosign sign-blob --yes \
+            --bundle polar-gosling-compute-module.zip.bundle \
+            polar-gosling-compute-module.zip
+
+      - name: Generate SLSA provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: polar-gosling-compute-module.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: CHANGELOG_RELEASE.md
+          files: |
+            polar-gosling-compute-module.zip
+            polar-gosling-compute-module.zip.sha256
+            polar-gosling-compute-module.zip.bundle

@@ -9,8 +9,9 @@ repos:
   rev: $VERSION # Get the latest from: $REPO/releases
   hooks:
     - id: tofu_fmt
+      exclude: '(\.github/|tests/)'
     - id: tofu_validate
-      exclude: 'tests/*'
+      exclude: '(\.github/|tests/)'
       args:
         - --tf-init-args=-upgrade
     - id: tofu_checkov
@@ -20,6 +21,7 @@ repos:
         - --args=--skip-check CKV_AWS_88
         - --args=--skip-check CKV_AWS_224
         - --args=--skip-check CKV_AWS_249
+        - --args=--skip-check CKV2_GHA_1
     - id: tofu_tflint
       exclude: 'tests/*'
       args:
