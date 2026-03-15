@@ -1,6 +1,6 @@
 provider_installation {
     oci_mirror {
-      repository_template = "registry.terraform.io/${namespace}/${name}"
+      repository_template = "registry.terraform.io/${namespace}"
       include = ["registry.opentofu.org/*"]
     }
   }
