@@ -77,8 +77,7 @@ jobs:
 
       - name: Run pre-commit
         run: |
-          rm -rf tests && TF_CLI_CONFIG_FILE="./terraform.rc" tofu init -upgrade && \
-          pre-commit run -a
+          TF_CLI_CONFIG_FILE="./terraform.rc" pre-commit run -a
 
   test-validation:
     name: Tests / Validation (mock)
