@@ -32,6 +32,49 @@ jobs:
       - name: Install checkov and pre-commit
         run: pip install checkov pre-commit --break-system-packages
 
+      - name: Generate .pre-commit-config.yaml
+        run: |
+          cat > .pre-commit-config.yaml << 'EOF'
+          repos:
+          - repo: https://github.com/tofuutils/pre-commit-opentofu
+            rev: v2.2.2
+            hooks:
+              - id: tofu_fmt
+                exclude: '(\.github/|tests/)'
+              - id: tofu_validate
+                exclude: '(\.github/|tests/)'
+                args:
+                  - --tf-init-args=-upgrade
+              - id: tofu_checkov
+                args:
+                  - --args=--skip-check CKV_AWS_41
+                  - --args=--skip-check CKV_AWS_65
+                  - --args=--skip-check CKV_AWS_88
+                  - --args=--skip-check CKV_AWS_224
+                  - --args=--skip-check CKV_AWS_249
+                  - --args=--skip-check CKV2_GHA_1
+              - id: tofu_tflint
+                exclude: '(\.github/|tests/)'
+                args:
+                  - --args=--enable-rule=terraform_deprecated_interpolation
+                  - --args=--enable-rule=terraform_deprecated_index
+                  - --args=--enable-rule=terraform_empty_list_equality
+                  - --args=--enable-rule=terraform_module_pinned_source
+                  - --args=--enable-rule=terraform_module_version
+                  - --args=--enable-rule=terraform_required_providers
+                  - --args=--enable-rule=terraform_required_version
+                  - --args=--enable-rule=terraform_typed_variables
+                  - --args=--enable-rule=terraform_unused_declarations
+                  - --args=--enable-rule=terraform_unused_required_providers
+                  - --args=--enable-rule=terraform_workspace_remote
+              - id: tofu_docs
+                exclude: '(\.github/|tests/)'
+                args:
+                  - --hook-config=--path-to-file=README.md
+                  - --hook-config=--add-to-existing-file=true
+                  - --hook-config=--create-file-if-not-exist=true
+          EOF
+
       - name: Run pre-commit
         run: |
           export TF_CLI_CONFIG_FILE="./terraform.rc"
