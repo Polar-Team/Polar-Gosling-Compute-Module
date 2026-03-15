@@ -4,10 +4,11 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
 
 permissions:
   contents: write
-  id-token: write   # cosign keyless signing + SLSA provenance
+  id-token: write # cosign keyless signing + SLSA provenance
   attestations: write
 
 jobs:
@@ -17,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # full history for changelog
+          fetch-depth: 0 # full history for changelog
 
       - name: Generate changelog
         id: changelog
