@@ -144,10 +144,12 @@ jobs:
         working-directory: tests/${{ matrix.suite }}
         env:
           YC_TOKEN: ${{ steps.yc-auth.outputs.token }}
+          TF_VAR_yc_folder_id: ${{ env.YC_FOLDER_ID }}
         run: tofu init -upgrade
 
       - name: tofu test
         working-directory: tests/${{ matrix.suite }}
         env:
           YC_TOKEN: ${{ steps.yc-auth.outputs.token }}
+          TF_VAR_yc_folder_id: ${{ env.YC_FOLDER_ID }}
         run: TF_CLI_CONFIG_FILE="./terraform.rc" tofu test -verbose

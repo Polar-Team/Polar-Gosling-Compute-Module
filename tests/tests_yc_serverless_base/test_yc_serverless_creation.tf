@@ -6,24 +6,38 @@ data "yandex_vpc_network" "test_network" {
   name = "test-network"
 }
 
-data "yandex_client_config" "client" {}
-
 
 locals {
-  docker_image_upload_cmd = <<-EOF
-  docker login cr.yandex --username IAM --password $(yc iam create-token);
+  docker_image_upload_cmd_linux = <<-EOF
+  docker login cr.yandex --username IAM --password $YC_TOKEN;
   docker pull nginx:latest;
   docker tag nginx:latest ${var.test_repository_link}:latest;
   docker push ${var.test_repository_link}:latest;
   docker image rm  -f ${var.test_repository_link}:latest;
   docker image rm -f nginx:latest;
   EOF
-  docker_interpreter      = data.external.os.result.os == "Windows" ? ["PowerShell", "-Command"] : ["bash", "-c"]
+
+  docker_image_upload_cmd_windows = <<-EOF
+  docker login cr.yandex --username IAM --password $env:YC_TOKEN;
+  docker pull nginx:latest;
+  docker tag nginx:latest ${var.test_repository_link}:latest;
+  docker push ${var.test_repository_link}:latest;
+  docker image rm  -f ${var.test_repository_link}:latest;
+  docker image rm -f nginx:latest;
+  EOF
+
+  is_windows              = data.external.os.result.os == "Windows"
+  docker_interpreter      = local.is_windows ? ["PowerShell", "-Command"] : ["bash", "-c"]
+  docker_image_upload_cmd = local.is_windows ? local.docker_image_upload_cmd_windows : local.docker_image_upload_cmd_linux
 }
 
 variable "test_repository_link" {
   type    = string
   default = "cr.yandex/crpkv7edjchv2v68ro2g/test-nginx-container"
+}
+
+variable "yc_folder_id" {
+  type = string
 }
 
 resource "null_resource" "upload_docker_image" {
@@ -41,7 +55,7 @@ resource "yandex_iam_service_account" "serverless_sa" {
 resource "yandex_resourcemanager_folder_iam_member" "serverless_permissions" {
   for_each   = toset(["container-registry.images.puller", "serverless-containers.admin"])
   role       = each.key
-  folder_id  = data.yandex_client_config.client.folder_id
+  folder_id  = var.yc_folder_id
   member     = "serviceAccount:${yandex_iam_service_account.serverless_sa.id}"
   depends_on = [yandex_iam_service_account.serverless_sa]
 }
