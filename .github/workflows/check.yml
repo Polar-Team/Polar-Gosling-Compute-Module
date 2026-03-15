@@ -78,6 +78,7 @@ jobs:
       - name: Run pre-commit
         run: |
           export TF_CLI_CONFIG_FILE="./terraform.rc"
+          tofu init --upgrade
           pre-commit run -a
 
   test-validation:
