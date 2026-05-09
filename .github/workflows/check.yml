@@ -21,14 +21,6 @@ jobs:
         with:
           tflint_version: latest
 
-      - name: Install terraform-docs
-        run: |
-          curl -sSLo terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.19.0/terraform-docs-v0.19.0-linux-amd64.tar.gz
-          tar -xzf terraform-docs.tar.gz
-          chmod +x terraform-docs
-          sudo mv terraform-docs /usr/local/bin/terraform-docs
-          rm -f terraform-docs.tar.gz
-
       - name: Install checkov and pre-commit
         run: pip install checkov pre-commit --break-system-packages
 
@@ -69,13 +61,6 @@ jobs:
             '        - --args=--enable-rule=terraform_unused_declarations',
             '        - --args=--enable-rule=terraform_unused_required_providers',
             '        - --args=--enable-rule=terraform_workspace_remote',
-            '    - id: tofu_docs',
-            r\"      exclude: '(\.github/|tests/)'\",
-            '      args:',
-            '        - --args=--hide=providers',
-            '        - --hook-config=--path-to-file=README.md',
-            '        - --hook-config=--add-to-existing-file=true',
-            '        - --hook-config=--create-file-if-not-exist=true',
           ]
           open('.pre-commit-config.yaml', 'w').write('\n'.join(lines) + '\n')
           "
