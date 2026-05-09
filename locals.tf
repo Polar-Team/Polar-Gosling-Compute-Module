@@ -239,7 +239,7 @@ locals {
     ][0] :
     [
       for s in aws_instance.this : s.public_ip
-    ]) : ["serverless"]
+    ][0]) : "serverless"
   )
 
   private_ip = (local.vm_creation_sum ? (var.yc_vm_create ? [
@@ -247,7 +247,7 @@ locals {
     ][0] :
     [
       for s in aws_instance.this : s.private_ip
-    ]) : ["serverless"]
+    ][0]) : "serverless"
   )
 
   id = (local.vm_creation_sum ? (var.yc_vm_create ? [

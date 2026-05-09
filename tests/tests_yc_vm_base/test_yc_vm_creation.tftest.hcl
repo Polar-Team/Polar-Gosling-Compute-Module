@@ -17,8 +17,8 @@ run "test_yc_vm_creation" {
   }
 
   assert {
-    condition     = module.yc_test_vm.public_ip != ""
-    error_message = "Public IP should not be empty"
+    condition     = length(module.yc_test_vm.public_ip) > 0
+    error_message = "Public IP list should not be empty"
   }
 
   assert {

@@ -4,12 +4,12 @@ output "hostname" {
 }
 
 output "public_ip" {
-  description = "The public IP address(es) of the created resource. For AWS EC2 this is a list with the instance public IP; for YC VM it is the NAT IP from the first network interface; returns `[\"serverless\"]` for non-VM resources"
+  description = "The public IP address of the created resource. For AWS EC2 this is the instance public IP; for YC VM it is the NAT IP from the first network interface; returns `\"serverless\"` for non-VM resources"
   value       = local.public_ip
 }
 
 output "private_ip" {
-  description = "The private IP address(es) of the created resource. For AWS EC2 this is a list with the instance private IP; for YC VM it is the internal IP from the first network interface; returns `[\"serverless\"]` for non-VM resources"
+  description = "The private IP address of the created resource. For AWS EC2 this is the instance private IP; for YC VM it is the internal IP from the first network interface; returns `\"serverless\"` for non-VM resources"
   value       = local.private_ip
 }
 

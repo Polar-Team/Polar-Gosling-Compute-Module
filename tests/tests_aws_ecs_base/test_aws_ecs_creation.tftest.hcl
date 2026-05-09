@@ -12,13 +12,13 @@ run "test_aws_ecs_creation" {
   }
 
   assert {
-    condition     = module.aws_test_ecs.public_ip == ["serverless"]
-    error_message = "ECS public_ip should return ['serverless'] since it is not a VM"
+    condition     = module.aws_test_ecs.public_ip == "serverless"
+    error_message = "ECS public_ip should return 'serverless' since it is not a VM"
   }
 
   assert {
-    condition     = module.aws_test_ecs.private_ip == ["serverless"]
-    error_message = "ECS private_ip should return ['serverless'] since it is not a VM"
+    condition     = module.aws_test_ecs.private_ip == "serverless"
+    error_message = "ECS private_ip should return 'serverless' since it is not a VM"
   }
 
   assert {

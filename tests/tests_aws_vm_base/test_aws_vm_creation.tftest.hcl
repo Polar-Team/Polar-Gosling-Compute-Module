@@ -12,7 +12,7 @@ run "test_aws_vm_creation" {
   }
 
   assert {
-    condition     = can(regex("^10\\.1\\.0\\.", module.aws_test_vm.private_ip[0]))
+    condition     = can(regex("^10\\.1\\.0\\.", module.aws_test_vm.private_ip))
     error_message = "Private IP should fit test subnet scope 10.1.0.x"
   }
 
@@ -28,6 +28,6 @@ run "test_aws_vm_creation" {
 
   assert {
     condition     = length(module.aws_test_vm.private_ip) > 0
-    error_message = "Private IP list should not be empty"
+    error_message = "Private IP should not be empty"
   }
 }

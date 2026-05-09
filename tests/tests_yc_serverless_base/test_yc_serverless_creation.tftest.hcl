@@ -12,13 +12,13 @@ run "test_yc_serverless_creation" {
   }
 
   assert {
-    condition     = module.yc_test_serverless.public_ip == ["serverless"]
-    error_message = "Serverless public_ip should return ['serverless'] since it is not a VM"
+    condition     = module.yc_test_serverless.public_ip == "serverless"
+    error_message = "Serverless public_ip should return 'serverless' since it is not a VM"
   }
 
   assert {
-    condition     = module.yc_test_serverless.private_ip == ["serverless"]
-    error_message = "Serverless private_ip should return ['serverless'] since it is not a VM"
+    condition     = module.yc_test_serverless.private_ip == "serverless"
+    error_message = "Serverless private_ip should return 'serverless' since it is not a VM"
   }
 
   assert {
