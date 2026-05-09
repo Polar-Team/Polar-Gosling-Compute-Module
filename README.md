@@ -107,14 +107,6 @@ Toggle creation with `aws_vm_create`, `aws_ecs_create`, `yc_vm_create`, `yc_serv
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.4.3 |
 | <a name="requirement_yandex"></a> [yandex](#requirement\_yandex) | >= 0.170.0 |
 
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.36.0 |
-| <a name="provider_random"></a> [random](#provider\_random) | 3.8.1 |
-| <a name="provider_yandex"></a> [yandex](#provider\_yandex) | 0.191.0 |
-
 ## Modules
 
 No modules.
