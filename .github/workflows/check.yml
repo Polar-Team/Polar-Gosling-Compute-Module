@@ -72,6 +72,7 @@ jobs:
             '    - id: tofu_docs',
             r\"      exclude: '(\.github/|tests/)'\",
             '      args:',
+            '        - --args=--hide=providers',
             '        - --hook-config=--path-to-file=README.md',
             '        - --hook-config=--add-to-existing-file=true',
             '        - --hook-config=--create-file-if-not-exist=true',
