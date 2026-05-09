@@ -98,3 +98,103 @@ run "serverless_mounts_invalid_mode" {
   variables { serverless_mounts = { mode = "write" } }
   expect_failures = [var.serverless_mounts]
 }
+
+
+# ---------------------------------------------------------------------------
+# ECS service_connect_defaults — invalid (more than one entry)
+# ---------------------------------------------------------------------------
+
+run "ecs_service_connect_defaults_invalid_multiple" {
+  command = plan
+  variables {
+    ecs_service_connect_defaults = [
+      { namespace = "ns-one" },
+      { namespace = "ns-two" }
+    ]
+  }
+  expect_failures = [var.ecs_service_connect_defaults]
+}
+
+# ---------------------------------------------------------------------------
+# ECS memory — invalid values
+# ---------------------------------------------------------------------------
+
+run "ecs_memory_too_small" {
+  command = plan
+  variables { ecs_memory = 256 }
+  expect_failures = [var.ecs_memory]
+}
+
+run "ecs_memory_too_large" {
+  command = plan
+  variables { ecs_memory = 200000 }
+  expect_failures = [var.ecs_memory]
+}
+
+# ---------------------------------------------------------------------------
+# Serverless memory — invalid values
+# ---------------------------------------------------------------------------
+
+run "serverless_memory_too_small" {
+  command = plan
+  variables { serverless_memory = 64 }
+  expect_failures = [var.serverless_memory]
+}
+
+run "serverless_memory_not_aligned" {
+  command = plan
+  variables { serverless_memory = 300 }
+  expect_failures = [var.serverless_memory]
+}
+
+run "serverless_memory_too_large" {
+  command = plan
+  variables { serverless_memory = 8192 }
+  expect_failures = [var.serverless_memory]
+}
+
+# ---------------------------------------------------------------------------
+# ECS network mode — additional invalid value
+# ---------------------------------------------------------------------------
+
+run "ecs_network_mode_invalid_overlay" {
+  command = plan
+  variables { ecs_network_mode = "overlay" }
+  expect_failures = [var.ecs_network_mode]
+}
+
+# ---------------------------------------------------------------------------
+# ECS requires_compatibilities — additional invalid value
+# ---------------------------------------------------------------------------
+
+run "ecs_requires_compatibilities_invalid_mixed" {
+  command = plan
+  variables { ecs_requires_compatibilities = ["EC2", "SERVERLESS"] }
+  expect_failures = [var.ecs_requires_compatibilities]
+}
+
+# ---------------------------------------------------------------------------
+# ECS CPU — additional invalid values
+# ---------------------------------------------------------------------------
+
+run "ecs_cpu_invalid_zero" {
+  command = plan
+  variables { ecs_cpu = 0 }
+  expect_failures = [var.ecs_cpu]
+}
+
+run "ecs_cpu_invalid_128" {
+  command = plan
+  variables { ecs_cpu = 128 }
+  expect_failures = [var.ecs_cpu]
+}
+
+# ---------------------------------------------------------------------------
+# Network acceleration type — additional invalid value
+# ---------------------------------------------------------------------------
+
+run "network_acceleration_type_invalid_none" {
+  command = plan
+  variables { network_acceleration_type = "none" }
+  expect_failures = [var.network_acceleration_type]
+}

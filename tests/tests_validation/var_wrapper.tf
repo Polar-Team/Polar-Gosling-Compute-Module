@@ -150,6 +150,35 @@ variable "serverless_mounts" {
   }
 }
 
+variable "ecs_service_connect_defaults" {
+  type = list(object({
+    namespace = string
+  }))
+  default = []
+  validation {
+    condition     = length(var.ecs_service_connect_defaults) <= 1
+    error_message = "Only one service_connect_defaults block is allowed per cluster."
+  }
+}
+
+variable "ecs_memory" {
+  type    = number
+  default = 512
+  validation {
+    condition     = var.ecs_memory >= 512 && var.ecs_memory <= 122880
+    error_message = "ECS task memory must be between 512 MiB and 122880 MiB (120 GB)."
+  }
+}
+
+variable "serverless_memory" {
+  type    = number
+  default = 128
+  validation {
+    condition     = var.serverless_memory >= 128 && var.serverless_memory <= 4096 && var.serverless_memory % 128 == 0
+    error_message = "Serverless memory must be between 128 and 4096 MB, aligned to 128 MB."
+  }
+}
+
 # ---------------------------------------------------------------------------
 # Outputs — expose vars so assertions can read them
 # ---------------------------------------------------------------------------
@@ -159,12 +188,15 @@ output "ecs_ipc_mode" { value = var.ecs_ipc_mode }
 output "ecs_pid_mode" { value = var.ecs_pid_mode }
 output "ecs_requires_compatibilities" { value = var.ecs_requires_compatibilities }
 output "ecs_cpu" { value = var.ecs_cpu }
+output "ecs_memory" { value = var.ecs_memory }
 output "ecs_ephemeral_storage" { value = var.ecs_ephemeral_storage }
 output "ecs_placement_constraints" { value = var.ecs_placement_constraints }
 output "ecs_settings" { value = var.ecs_settings }
 output "ecs_configurations" { value = var.ecs_configurations }
+output "ecs_service_connect_defaults" { value = var.ecs_service_connect_defaults }
 output "network_acceleration_type" { value = var.network_acceleration_type }
 output "serverless_metadata_options" { value = var.serverless_metadata_options }
 output "serverless_runtime" { value = var.serverless_runtime }
 output "serverless_secrets" { value = var.serverless_secrets }
 output "serverless_mounts" { value = var.serverless_mounts }
+output "serverless_memory" { value = var.serverless_memory }

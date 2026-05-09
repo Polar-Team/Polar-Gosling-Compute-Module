@@ -18,7 +18,7 @@ variable "source_image_id" {
 
 
 variable "yc_vm_create" {
-  description = "Whether to create an instance"
+  description = "Whether to create a Yandex Cloud compute instance. Set to `true` to provision a VM with the specified resources and network configuration"
   type        = bool
   default     = false
 }
@@ -32,14 +32,16 @@ variable "creation_zone" {
 }
 
 variable "yc_prefix" {
-  type    = string
-  default = "gosling-runner"
+  description = "Naming prefix appended to all Yandex Cloud resource names (e.g. VM hostname, serverless container name)"
+  type        = string
+  default     = "gosling-runner"
 }
 
 
 variable "vm_vcpu_type" {
-  type    = string
-  default = "standard-v2"
+  description = "Yandex Cloud platform ID that determines the CPU generation and type (e.g. `standard-v2` for Intel Cascade Lake, `standard-v3` for Intel Ice Lake, `gpu-standard-v2` for GPU instances)"
+  type        = string
+  default     = "standard-v2"
 }
 
 variable "core_fraction" {
@@ -72,20 +74,20 @@ variable "network_acceleration_type" {
 variable "vm_vcpu_qty" {
   type        = number
   default     = 2
-  description = "(Required) CPU cores for the instance."
+  description = "(Required) Number of virtual CPU cores for the instance. Must be compatible with the chosen `vm_vcpu_type` platform (e.g. standard-v2 supports 2, 4, 8, 16, 32, etc.)"
 }
 
 
 variable "vm_ram_qty" {
   type        = number
   default     = 2
-  description = "(Required) Memory size in GB."
+  description = "(Required) Memory size in GB. Must be compatible with the chosen platform and core count (minimum 1 GB per core for standard platforms)"
 }
 
 variable "metadata_options" {
   type        = any
   default     = {}
-  description = "(Optional) Options allow user to configure access to instance's metadata"
+  description = "(Optional) Options to configure access to the instance metadata service. Supports `aws_v1_http_endpoint`, `aws_v1_http_token`, `gce_http_endpoint`, and `gce_http_token` (each accepting values 1=enabled, 2=disabled)"
 }
 
 variable "placement_policy" {
@@ -275,27 +277,27 @@ variable "yc_network_interface" {
 variable "group" {
   type        = string
   default     = "application"
-  description = "(Optional) Which group of host is it?"
+  description = "(Optional) Logical host group label used for resource tagging and identification (e.g. `application`, `database`, `monitoring`)"
 }
 
 variable "timeout" {
   type        = string
   default     = "15m"
-  description = "(Optional) Timeouts for creation, deletion and update."
-
+  description = "(Optional) Maximum duration to wait for resource creation, update, and deletion operations (e.g. `15m`, `30m`, `1h`)"
 }
 
 variable "cloud-init" {
   nullable    = true
   default     = null
   type        = string
-  description = "(Required) Cloud init config script."
+  description = "(Optional) Cloud-init user data script or configuration (YAML/shell). Passed to the instance metadata as `user-data` for automated provisioning on first boot"
 }
 
 variable "vault-token" {
   type        = string
   default     = null
-  description = "(Optional) Temporary meradata deploy vault token."
+  sensitive   = true
+  description = "(Optional) Temporary HashiCorp Vault token passed via instance metadata for secret retrieval during provisioning. Should be short-lived and scoped to the deployment"
 }
 
 #################################################
@@ -305,7 +307,7 @@ variable "vault-token" {
 #################################################
 
 variable "yc_serverless_create" {
-  description = "Whether to create a serverless instance"
+  description = "Whether to create a Yandex Cloud Serverless Container. Set to `true` to deploy a container revision with the specified image, connectivity, and scaling policies"
   type        = bool
   default     = false
 }
@@ -496,37 +498,37 @@ variable "serverless_async_invocation" {
 
 variable "serverless_description" {
   type        = string
-  description = "(Optional) (String) Description of Yandex Cloud Serverless Container."
+  description = "(Optional) Human-readable description for the Yandex Cloud Serverless Container. Displayed in the console and API responses"
   default     = null
 }
 
 variable "serverless_memory" {
   type        = number
-  description = "(Required) (Number) Memory in megabytes (aligned to 128 MB)."
+  description = "(Required) Memory allocation in megabytes for the serverless container revision. Must be aligned to 128 MB (e.g. 128, 256, 512, 1024)"
   default     = 128
 }
 
 variable "serverless_cores" {
   type        = number
-  description = "(Optional) (Number) Core (1+) of the Yandex Cloud Serverless Container."
+  description = "(Optional) Number of CPU cores (1 or more) allocated to the serverless container revision. Higher core counts improve compute performance but increase cost"
   default     = null
 }
 
 variable "serverless_concurrency" {
   type        = number
-  description = "(Optional) (Number)  Concurrency of Yandex Cloud Serverless Container."
+  description = "(Optional) Maximum number of concurrent requests a single container instance can handle simultaneously before scaling out"
   default     = null
 }
 
 variable "serverless_core_fraction" {
   type        = number
-  description = "(Optional) (Number) Core fraction (0..100) of the Yandex Cloud Serverless Conatiner."
+  description = "(Optional) Guaranteed share of CPU time as a percentage (5, 20, 50, or 100). Lower fractions reduce cost but may throttle under sustained load"
   default     = null
 }
 
 variable "serverless_execution_timeout" {
   type        = string
-  description = "(Optional) (Number) Execution timeout in seconds (duration format) for Yandex Cloud Serverless Container."
+  description = "(Optional) Maximum execution timeout for a single request in duration format (e.g. `60s`, `300s`, `3600s`). The container is terminated if a request exceeds this duration"
   default     = null
 }
 
@@ -539,19 +541,18 @@ variable "serverless_execution_timeout" {
 variable "additional_labels" {
   type        = map(any)
   default     = null
-  description = "(Optional) Additional labels for servers."
-
+  description = "(Optional) Map of additional labels/tags to attach to all created resources. Merged with the module's computed labels (`created_at`, `owner`, `group`)"
 }
 
 variable "owner" {
   type        = string
-  description = "(Optional) Lables with owner markers"
+  description = "(Optional) Owner identifier added to resource labels for cost allocation and accountability tracking"
   default     = "polar-team"
 }
 
 variable "service_account_id" {
   type        = string
   default     = null
-  description = "(Optional) ID of the service account authorized for this instance."
+  description = "(Optional) ID of the Yandex Cloud service account assigned to the instance or serverless container. Grants the resource permissions to access other cloud services (e.g. Container Registry, Object Storage)"
 }
 
