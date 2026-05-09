@@ -235,7 +235,7 @@ locals {
   )
 
   public_ip = (local.vm_creation_sum ? (var.yc_vm_create ? [
-    for s in yandex_compute_instance.this : s.network_interface[*].nat_ip_address
+    for s in yandex_compute_instance.this : s.network_interface[0].nat_ip_address
     ][0] :
     [
       for s in aws_instance.this : s.public_ip
@@ -243,7 +243,7 @@ locals {
   )
 
   private_ip = (local.vm_creation_sum ? (var.yc_vm_create ? [
-    for s in yandex_compute_instance.this : s.network_interface[*].ip_address
+    for s in yandex_compute_instance.this : s.network_interface[0].ip_address
     ][0] :
     [
       for s in aws_instance.this : s.private_ip
