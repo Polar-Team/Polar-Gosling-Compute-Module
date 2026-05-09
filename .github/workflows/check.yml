@@ -81,7 +81,7 @@ jobs:
 
       - name: Run pre-commit
         run: |
-          TF_CLI_CONFIG_FILE="./terraform.rc" pre-commit run -a
+          pre-commit run -a
 
   test-validation:
     name: Tests / Validation (mock)
