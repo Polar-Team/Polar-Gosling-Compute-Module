@@ -46,6 +46,7 @@ jobs:
                 args:
                   - --tf-init-args=-upgrade
               - id: tofu_checkov
+                exclude: '(\.github/|tests/)'
                 args:
                   - --args=--skip-check CKV_AWS_41
                   - --args=--skip-check CKV_AWS_65

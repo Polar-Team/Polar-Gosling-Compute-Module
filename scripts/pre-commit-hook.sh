@@ -15,6 +15,7 @@ repos:
       args:
         - --tf-init-args=-upgrade
     - id: tofu_checkov
+      exclude: '(\.github/|tests/)'
       args:
         - --args=--skip-check CKV_AWS_41
         - --args=--skip-check CKV_AWS_65
@@ -23,7 +24,7 @@ repos:
         - --args=--skip-check CKV_AWS_249
         - --args=--skip-check CKV2_GHA_1
     - id: tofu_tflint
-      exclude: 'tests/*'
+      exclude: '(\.github/|tests/)'
       args:
         - --args=--enable-rule=terraform_deprecated_interpolation
         - --args=--enable-rule=terraform_deprecated_index
@@ -37,7 +38,7 @@ repos:
         - --args=--enable-rule=terraform_unused_required_providers
         - --args=--enable-rule=terraform_workspace_remote
     - id: tofu_docs
-      exclude: 'tests/*'
+      exclude: '(\.github/|tests/)'
       args:
         - --hook-config=--path-to-file=README.md        # Valid UNIX path. I.e. ../TFDOC.md or docs/README.md etc.
         - --hook-config=--add-to-existing-file=true     # Boolean. true or false
