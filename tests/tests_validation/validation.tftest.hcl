@@ -172,3 +172,127 @@ run "serverless_mounts_valid_mode_ro" {
     error_message = "ro should be valid"
   }
 }
+
+
+# ---------------------------------------------------------------------------
+# ECS service_connect_defaults — valid
+# ---------------------------------------------------------------------------
+
+run "ecs_service_connect_defaults_valid_single" {
+  command = plan
+  variables { ecs_service_connect_defaults = [{ namespace = "arn:aws:servicediscovery:us-east-1:123456789:namespace/ns-abc123" }] }
+  assert {
+    condition     = length(var.ecs_service_connect_defaults) == 1
+    error_message = "A single service_connect_defaults entry should be accepted"
+  }
+}
+
+run "ecs_service_connect_defaults_valid_empty" {
+  command = plan
+  variables { ecs_service_connect_defaults = [] }
+  assert {
+    condition     = length(var.ecs_service_connect_defaults) == 0
+    error_message = "Empty list should be accepted"
+  }
+}
+
+# ---------------------------------------------------------------------------
+# ECS memory — valid
+# ---------------------------------------------------------------------------
+
+run "ecs_memory_valid_512" {
+  command = plan
+  variables { ecs_memory = 512 }
+  assert {
+    condition     = var.ecs_memory == 512
+    error_message = "512 MiB should be valid"
+  }
+}
+
+run "ecs_memory_valid_8192" {
+  command = plan
+  variables { ecs_memory = 8192 }
+  assert {
+    condition     = var.ecs_memory == 8192
+    error_message = "8192 MiB should be valid"
+  }
+}
+
+# ---------------------------------------------------------------------------
+# Serverless memory — valid
+# ---------------------------------------------------------------------------
+
+run "serverless_memory_valid_128" {
+  command = plan
+  variables { serverless_memory = 128 }
+  assert {
+    condition     = var.serverless_memory == 128
+    error_message = "128 MB should be valid"
+  }
+}
+
+run "serverless_memory_valid_1024" {
+  command = plan
+  variables { serverless_memory = 1024 }
+  assert {
+    condition     = var.serverless_memory == 1024
+    error_message = "1024 MB should be valid"
+  }
+}
+
+# ---------------------------------------------------------------------------
+# ECS network mode — additional valid values
+# ---------------------------------------------------------------------------
+
+run "ecs_network_mode_valid_none" {
+  command = plan
+  variables { ecs_network_mode = "none" }
+  assert {
+    condition     = var.ecs_network_mode == "none"
+    error_message = "none should be accepted"
+  }
+}
+
+run "ecs_network_mode_valid_host" {
+  command = plan
+  variables { ecs_network_mode = "host" }
+  assert {
+    condition     = var.ecs_network_mode == "host"
+    error_message = "host should be accepted"
+  }
+}
+
+# ---------------------------------------------------------------------------
+# ECS requires_compatibilities — additional valid combinations
+# ---------------------------------------------------------------------------
+
+run "ecs_requires_compatibilities_valid_ec2_only" {
+  command = plan
+  variables { ecs_requires_compatibilities = ["EC2"] }
+  assert {
+    condition     = var.ecs_requires_compatibilities[0] == "EC2"
+    error_message = "EC2 alone should be accepted"
+  }
+}
+
+run "ecs_requires_compatibilities_valid_external" {
+  command = plan
+  variables { ecs_requires_compatibilities = ["EXTERNAL"] }
+  assert {
+    condition     = var.ecs_requires_compatibilities[0] == "EXTERNAL"
+    error_message = "EXTERNAL alone should be accepted"
+  }
+}
+
+# ---------------------------------------------------------------------------
+# ECS placement constraints — additional valid case
+# ---------------------------------------------------------------------------
+
+run "ecs_placement_constraints_valid_distinct_instance" {
+  command = plan
+  variables { ecs_placement_constraints = [{ type = "distinctInstance" }] }
+  assert {
+    condition     = var.ecs_placement_constraints[0].type == "distinctInstance"
+    error_message = "distinctInstance should be valid"
+  }
+}

@@ -284,8 +284,8 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_hostname"></a> [hostname](#output\_hostname) | n/a |
-| <a name="output_id"></a> [id](#output\_id) | n/a |
-| <a name="output_private_ip"></a> [private\_ip](#output\_private\_ip) | n/a |
-| <a name="output_public_ip"></a> [public\_ip](#output\_public\_ip) | n/a |
+| <a name="output_hostname"></a> [hostname](#output\_hostname) | The hostname or name of the created resource. For VMs this is the instance hostname; for ECS/serverless it is the resource Name tag or container name |
+| <a name="output_id"></a> [id](#output\_id) | The unique identifier of the created resource (instance ID, container ID, or task definition ID) |
+| <a name="output_private_ip"></a> [private\_ip](#output\_private\_ip) | The private IP address of the created resource, or "serverless" for non-VM resources |
+| <a name="output_public_ip"></a> [public\_ip](#output\_public\_ip) | The public IP address of the created resource, or "serverless" for non-VM resources |
 <!-- END OF PRE-COMMIT-OPENTOFU DOCS HOOK -->

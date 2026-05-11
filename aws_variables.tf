@@ -17,12 +17,13 @@ variable "aws_vm_create" {
 }
 
 variable "aws_prefix" {
-  type    = string
-  default = "gosling-runner"
+  description = "Naming prefix appended to all AWS resource names and tags (e.g. EC2 instances, ECS clusters)"
+  type        = string
+  default     = "gosling-runner"
 }
 
 variable "ami" {
-  description = "ID of AMI to use for the instance"
+  description = "ID of AMI to use for the instance. If not provided, the AMI is resolved via the SSM parameter specified in `ami_ssm_parameter`"
   type        = string
   default     = null
 }
@@ -53,7 +54,7 @@ variable "capacity_reservation_specification" {
 }
 
 variable "cpu_credits" {
-  description = "The credit option for CPU usage (unlimited or standard)"
+  description = "The credit option for CPU usage. Valid values: `unlimited` (pay for additional burst capacity) or `standard` (earn credits when idle). Applies only to burstable instance types (T2, T3, T3a)"
   type        = string
   default     = null
 }
@@ -119,7 +120,7 @@ variable "instance_initiated_shutdown_behavior" {
 }
 
 variable "instance_type" {
-  description = "The type of instance to start"
+  description = "The EC2 instance type to launch (e.g. `t3.micro`, `m5.large`). Determines the vCPU, memory, storage, and networking capacity of the instance"
   type        = string
   default     = "t3.micro"
 }
@@ -149,7 +150,7 @@ variable "key_name" {
 }
 
 variable "launch_template" {
-  description = "Specifies a Launch Template to configure the instance. Parameters configured on this resource will override the corresponding parameters in the Launch Template"
+  description = "Specifies a Launch Template to configure the instance. Accepted keys: `id`, `name`, `version`. Parameters configured directly on this module's resource will override the corresponding parameters defined in the Launch Template"
   type        = map(string)
   default     = {}
 }
@@ -273,25 +274,24 @@ variable "timeouts" {
 }
 
 variable "cpu_options" {
-  description = "Defines CPU options to apply to the instance at launch time."
+  description = "Defines CPU options to apply to the instance at launch time. Accepted keys: `core_count` (number of CPU cores), `threads_per_core` (threads per core, set to 1 to disable hyper-threading), `amd_sev_snp` (AMD SEV-SNP support)"
   type        = any
   default     = {}
 }
 
 variable "disable_api_stop" {
-  description = "If true, enables EC2 Instance Stop Protection"
+  description = "If true, enables EC2 Instance Stop Protection. Prevents the instance from being stopped via the API or console until this protection is disabled"
   type        = bool
   default     = null
-
 }
 #################################################
 #                                               #
-#             AWS Lamda variables               #
+#             AWS ECS variables                 #
 #                                               #
 #################################################
 
 variable "ecs_settings" {
-  description = "List of configuration block(s) with cluster settings. Valid settings: containerInsights"
+  description = "List of configuration block(s) with cluster settings. Currently the only supported setting name is `containerInsights` with values `enabled` or `disabled`"
   type = list(object({
     name  = string
     value = string
@@ -316,7 +316,7 @@ variable "ecs_settings" {
 }
 
 variable "ecs_configurations" {
-  description = "Configuration block for execute command and managed storage configuration for the cluster"
+  description = "Configuration block for ECS cluster execute-command and managed-storage settings. Execute command logging must be one of: `NONE`, `DEFAULT`, or `OVERRIDE`"
   type = list(object({
     execute_command_configuration = optional(list(object({
       logging    = optional(string)
@@ -348,7 +348,7 @@ variable "ecs_configurations" {
 }
 
 variable "ecs_service_connect_defaults" {
-  description = "Configures a default Service Connect namespace. Amazon ECS services running in the cluster can use this namespace for Service Connect"
+  description = "Configures a default Service Connect namespace for the ECS cluster. Only one entry is allowed. Services in the cluster will use this namespace for service-to-service communication via AWS Cloud Map"
   type = list(object({
     namespace = string
   }))
@@ -360,13 +360,13 @@ variable "ecs_service_connect_defaults" {
   }
 }
 variable "aws_ecs_create" {
-  description = "Whether to create ECS task definition resources"
+  description = "Whether to create ECS resources (cluster and task definition). Set to `true` to provision an ECS cluster with a task definition for container workloads"
   type        = bool
   default     = false
 }
 
 variable "ecs_network_mode" {
-  description = "Docker networking mode to use for the containers in the task. Valid values: none, bridge, awsvpc, host"
+  description = "Docker networking mode for the task's containers. `awsvpc` gives each task its own ENI; `bridge` uses Docker's built-in bridge; `host` maps directly to the host network; `none` disables networking"
   type        = string
   default     = "awsvpc"
   validation {
@@ -376,7 +376,7 @@ variable "ecs_network_mode" {
 }
 
 variable "ecs_ipc_mode" {
-  description = "IPC resource namespace to use for the containers in the task. Valid values: host, task, none"
+  description = "IPC resource namespace for the containers in the task. `host` shares the host's IPC namespace; `task` shares among containers in the task; `none` keeps containers isolated. Null uses the Docker daemon default"
   type        = string
   default     = null
   validation {
@@ -386,7 +386,7 @@ variable "ecs_ipc_mode" {
 }
 
 variable "ecs_pid_mode" {
-  description = "Process namespace to use for the containers in the task. Valid values: host, task"
+  description = "Process (PID) namespace for the containers in the task. `host` shares the host's PID namespace (containers can see host processes); `task` shares among containers in the task. Null uses the Docker daemon default"
   type        = string
   default     = null
   validation {
@@ -396,19 +396,19 @@ variable "ecs_pid_mode" {
 }
 
 variable "ecs_enable_fault_injection" {
-  description = "Whether to enable fault injection for the task definition"
+  description = "Whether to enable AWS Fault Injection Simulator (FIS) integration for the task definition, allowing chaos-engineering experiments against the task"
   type        = bool
   default     = false
 }
 
 variable "ecs_skip_destroy" {
-  description = "Whether to retain the old revision when the resource is destroyed or replacement is necessary"
+  description = "Whether to retain the old task definition revision when the resource is destroyed or replacement is necessary. Useful when other services still reference previous revisions"
   type        = bool
   default     = false
 }
 
 variable "ecs_requires_compatibilities" {
-  description = "Set of launch types required by the task. Valid values: EC2, FARGATE, EXTERNAL"
+  description = "Set of launch types required by the task. `FARGATE` for serverless containers, `EC2` for self-managed instances, `EXTERNAL` for ECS Anywhere on-premises hosts"
   type        = list(string)
   default     = ["FARGATE"]
   validation {
@@ -418,7 +418,7 @@ variable "ecs_requires_compatibilities" {
 }
 
 variable "ecs_cpu" {
-  description = "Number of CPU units used by the task. Required for FARGATE launch type"
+  description = "Number of CPU units for the task (1024 units = 1 vCPU). Required for FARGATE. Valid values: 256, 512, 1024, 2048, 4096, 8192, 16384"
   type        = number
   default     = 256
   validation {
@@ -428,7 +428,7 @@ variable "ecs_cpu" {
 }
 
 variable "ecs_memory" {
-  description = "Amount of memory (in MiB) used by the task. Required for FARGATE launch type"
+  description = "Amount of memory (in MiB) used by the task. Required for FARGATE. Must comply with cpu/memory combinations documented by AWS (e.g. 256 CPU supports 512–2048 MiB)"
   type        = number
   default     = 512
 }
@@ -446,19 +446,19 @@ variable "ecs_task_role_arn" {
 }
 
 variable "ecs_tags" {
-  description = "Map of tags to assign to the ECS task definition"
+  description = "Map of additional tags to assign to ECS resources (cluster and task definition). Merged with `tags` and computed labels"
   type        = map(string)
   default     = {}
 }
 
 variable "ecs_track_latest" {
-  description = "Whether to track the latest ACTIVE task definition on each apply"
+  description = "Whether to track the latest ACTIVE task definition revision on each apply, so Terraform detects drift when an external process registers a new revision"
   type        = bool
   default     = false
 }
 
 variable "ecs_volumes" {
-  description = "List of volume definitions for the task"
+  description = "List of volume definitions for the ECS task. Supports Docker volumes, EFS file systems, and FSx for Windows File Server. Volumes are referenced by name in container `mountPoints`"
   type = list(object({
     name                = string
     host_path           = optional(string)
@@ -493,7 +493,7 @@ variable "ecs_volumes" {
 }
 
 variable "ecs_runtime_platform" {
-  description = "Configuration block for runtime platform"
+  description = "Runtime platform configuration for the ECS task. Specifies `cpu_architecture` (`X86_64` or `ARM64`) and `operating_system_family` (e.g. `LINUX`, `WINDOWS_SERVER_2019_FULL`)"
   type = list(object({
     cpu_architecture        = optional(string)
     operating_system_family = optional(string)
@@ -502,7 +502,7 @@ variable "ecs_runtime_platform" {
 }
 
 variable "ecs_placement_constraints" {
-  description = "Set of placement constraints rules that are taken into consideration during task placement"
+  description = "Placement constraint rules for task placement. `memberOf` uses a cluster query expression; `distinctInstance` ensures each task runs on a separate instance"
   type = list(object({
     type       = string
     expression = optional(string)
@@ -515,7 +515,7 @@ variable "ecs_placement_constraints" {
 }
 
 variable "ecs_proxy_configuration" {
-  description = "Configuration block for the App Mesh proxy"
+  description = "Configuration block for the AWS App Mesh proxy sidecar. Specifies the proxy container name and the properties map passed to the proxy (e.g. `AppPorts`, `EgressIgnoredIPs`)"
   type = list(object({
     type           = optional(string)
     container_name = string
@@ -525,7 +525,7 @@ variable "ecs_proxy_configuration" {
 }
 
 variable "ecs_ephemeral_storage" {
-  description = "Amount of ephemeral storage (in GiB) to allocate to the task"
+  description = "Ephemeral storage (in GiB) for the Fargate task. Must be between 21 and 200 GiB. The default Fargate ephemeral storage is 20 GiB when this block is omitted"
   type = list(object({
     size_in_gib = number
   }))
@@ -537,43 +537,43 @@ variable "ecs_ephemeral_storage" {
 }
 
 variable "container_name" {
-  description = "Name of the container"
+  description = "Name of the container within the ECS task definition. Used for referencing in dependencies, port mappings, and logging. Defaults to `app-container` if null"
   type        = string
   default     = null
 }
 
 variable "container_image" {
-  description = "Docker image to use for the container"
+  description = "Docker image URI to use for the container (e.g. `nginx:latest` or `123456789.dkr.ecr.us-east-1.amazonaws.com/app:v1`). Defaults to `nginx:latest` if null"
   type        = string
   default     = null
 }
 
 variable "container_cpu" {
-  description = "CPU units to allocate to the container"
+  description = "CPU units to allocate to the container (1024 units = 1 vCPU). For Fargate, the sum of all containers' CPU must not exceed the task-level `ecs_cpu`. Defaults to 256 if null"
   type        = number
   default     = null
 }
 
 variable "container_memory" {
-  description = "Memory (in MiB) to allocate to the container"
+  description = "Hard memory limit (in MiB) for the container. If the container exceeds this limit, it is killed. Defaults to 512 if null"
   type        = number
   default     = null
 }
 
 variable "container_essential" {
-  description = "Whether the container is essential"
+  description = "Whether the container is essential. If an essential container stops or fails, all other containers in the task are stopped. Defaults to `true` if null"
   type        = bool
   default     = null
 }
 
 variable "container_memory_reservation" {
-  description = "Soft limit (in MiB) of memory to reserve for the container"
+  description = "Soft memory limit (in MiB) reserved for the container. The container can burst above this, but ECS uses it for placement decisions. Defaults to 256 if null"
   type        = number
   default     = null
 }
 
 variable "container_portmappings" {
-  description = "Port mappings for the container"
+  description = "Port mappings for the container. Maps container ports to host ports. For `awsvpc` network mode, `host_port` must equal `container_port` or be omitted"
   type = list(object({
     container_port = number
     host_port      = optional(number)
@@ -585,7 +585,7 @@ variable "container_portmappings" {
 }
 
 variable "container_environment" {
-  description = "Environment variables for the container"
+  description = "Environment variables to pass to the container at startup. Each entry requires a `name` and `value` pair"
   type = list(object({
     name  = string
     value = string
@@ -594,7 +594,7 @@ variable "container_environment" {
 }
 
 variable "container_environment_files" {
-  description = "Environment files for the container"
+  description = "S3-hosted environment files (.env) to inject into the container. Each entry requires `value` (S3 ARN) and `type` (must be `s3`)"
   type = list(object({
     value = string
     type  = string
@@ -603,7 +603,7 @@ variable "container_environment_files" {
 }
 
 variable "container_secrets" {
-  description = "Secrets to pass to the container"
+  description = "Secrets to inject as environment variables in the container. `valueFrom` is the ARN of the secret in Secrets Manager or SSM Parameter Store"
   type = list(object({
     name      = string
     valueFrom = string
@@ -612,7 +612,7 @@ variable "container_secrets" {
 }
 
 variable "container_depends_on" {
-  description = "Container dependencies"
+  description = "Container startup/shutdown dependencies. Specifies other containers that must reach a given `condition` (`START`, `COMPLETE`, `SUCCESS`, or `HEALTHY`) before this container starts"
   type = list(object({
     containerName = string
     condition     = string
@@ -621,13 +621,13 @@ variable "container_depends_on" {
 }
 
 variable "container_links" {
-  description = "Links to other containers"
+  description = "Links to other containers in the same task (Docker `--link` flag). Only supported in `bridge` network mode. Enables hostname-based communication between containers"
   type        = list(string)
   default     = null
 }
 
 variable "container_volumes_from" {
-  description = "Data volumes to mount from another container"
+  description = "Data volumes to mount from another container in the same task. Inherits the mount points from the `sourceContainer`"
   type = list(object({
     sourceContainer = string
     readOnly        = optional(bool)
@@ -636,7 +636,7 @@ variable "container_volumes_from" {
 }
 
 variable "container_mount_points" {
-  description = "Mount points for data volumes"
+  description = "Mount points for data volumes in the container. Maps a task-level volume name (`sourceVolume`) to a path inside the container (`containerPath`)"
   type = list(object({
     sourceVolume  = string
     containerPath = string
@@ -646,7 +646,7 @@ variable "container_mount_points" {
 }
 
 variable "container_linux_parameters" {
-  description = "Linux-specific options for the container"
+  description = "Linux-specific options for the container. Includes kernel capabilities (add/drop), devices, init process, shared memory, tmpfs mounts, swap, and swappiness settings"
   type = object({
     capabilities = optional(object({
       add  = optional(list(string))
@@ -671,55 +671,55 @@ variable "container_linux_parameters" {
 }
 
 variable "container_hostname" {
-  description = "Hostname to use for the container"
+  description = "Hostname to use for the container. Only available with `bridge` network mode"
   type        = string
   default     = null
 }
 
 variable "container_user" {
-  description = "User to use inside the container"
+  description = "User to run as inside the container. Format: `user`, `uid`, `user:group`, or `uid:gid`"
   type        = string
   default     = null
 }
 
 variable "container_working_directory" {
-  description = "Working directory in the container"
+  description = "Working directory inside the container (absolute path). Overrides the Docker image's WORKDIR instruction"
   type        = string
   default     = null
 }
 
 variable "container_disable_networking" {
-  description = "Disable networking within the container"
+  description = "When true, networking is disabled within the container. Only supported with `none` network mode"
   type        = bool
   default     = null
 }
 
 variable "container_privileged" {
-  description = "Give extended privileges to the container"
+  description = "When true, the container is given elevated privileges on the host (similar to `docker run --privileged`). Not supported on Fargate"
   type        = bool
   default     = null
 }
 
 variable "container_readonly_root_filesystem" {
-  description = "Mount the container's root filesystem as read-only"
+  description = "When true, the container's root filesystem is mounted as read-only. Writes must target mounted volumes. Recommended for security hardening"
   type        = bool
   default     = null
 }
 
 variable "container_dns_servers" {
-  description = "List of DNS servers for the container"
+  description = "List of DNS server IP addresses presented to the container. Only supported in `bridge` network mode"
   type        = list(string)
   default     = null
 }
 
 variable "container_dns_search_domains" {
-  description = "List of DNS search domains for the container"
+  description = "List of DNS search domains presented to the container. Only supported in `bridge` network mode"
   type        = list(string)
   default     = null
 }
 
 variable "container_extra_hosts" {
-  description = "Extra hosts to add to /etc/hosts"
+  description = "Extra host entries appended to the container's `/etc/hosts` file. Each entry maps a `hostname` to an `ipAddress`"
   type = list(object({
     hostname  = string
     ipAddress = string
@@ -728,19 +728,19 @@ variable "container_extra_hosts" {
 }
 
 variable "container_docker_security_options" {
-  description = "Security options for the container"
+  description = "Docker security options (e.g. SELinux labels, AppArmor profiles) to apply to the container. Not supported on Fargate"
   type        = list(string)
   default     = null
 }
 
 variable "container_docker_labels" {
-  description = "Docker labels for the container"
+  description = "Map of key/value metadata labels applied to the Docker container for identification and filtering"
   type        = map(string)
   default     = null
 }
 
 variable "container_ulimits" {
-  description = "Ulimits for the container"
+  description = "Linux ulimits to set in the container. Each entry specifies a resource `name` (e.g. `nofile`), `softLimit`, and `hardLimit`"
   type = list(object({
     name      = string
     softLimit = number
@@ -750,19 +750,19 @@ variable "container_ulimits" {
 }
 
 variable "container_command" {
-  description = "Command to run in the container"
+  description = "Command to run in the container, overriding the Docker image's CMD instruction. Passed as exec-form arguments"
   type        = list(string)
   default     = null
 }
 
 variable "container_entry_point" {
-  description = "Entry point for the container"
+  description = "Entry point for the container, overriding the Docker image's ENTRYPOINT instruction. Passed as exec-form arguments"
   type        = list(string)
   default     = null
 }
 
 variable "container_health_check" {
-  description = "Health check configuration for the container"
+  description = "Container health check configuration. `command` is the check command (e.g. `[\"CMD-SHELL\", \"curl -f http://localhost/\"]`). Optional `interval`, `timeout`, `retries`, and `startPeriod` (all in seconds)"
   type = object({
     command     = list(string)
     interval    = optional(number)
@@ -774,19 +774,19 @@ variable "container_health_check" {
 }
 
 variable "container_start_timeout" {
-  description = "Time duration to wait before giving up on container startup"
+  description = "Time (in seconds) to wait for a container dependency to resolve before giving up. Only applies when the container has `dependsOn` entries"
   type        = number
   default     = null
 }
 
 variable "container_stop_timeout" {
-  description = "Time duration to wait before the container is forcefully killed"
+  description = "Time (in seconds) to wait after sending SIGTERM before forcefully killing the container with SIGKILL"
   type        = number
   default     = null
 }
 
 variable "container_system_controls" {
-  description = "System controls (sysctls) for the container"
+  description = "Kernel parameter (sysctl) overrides for the container. Each entry has a `namespace` (e.g. `net.core.somaxconn`) and a `value`"
   type = list(object({
     namespace = string
     value     = string
@@ -795,7 +795,7 @@ variable "container_system_controls" {
 }
 
 variable "container_resource_requirements" {
-  description = "Resource requirements for the container"
+  description = "GPU or other accelerator resource requirements for the container. Each entry specifies `type` (e.g. `GPU`, `InferenceAccelerator`) and a `value` (device count or ID)"
   type = list(object({
     type  = string
     value = string
@@ -804,7 +804,7 @@ variable "container_resource_requirements" {
 }
 
 variable "container_firelens_configuration" {
-  description = "FireLens configuration for the container"
+  description = "AWS FireLens log router configuration. `type` is either `fluentd` or `fluentbit`. Optional `options` map provides additional configuration passed to the log router"
   type = object({
     type    = string
     options = optional(map(string))
@@ -813,31 +813,31 @@ variable "container_firelens_configuration" {
 }
 
 variable "container_interactive" {
-  description = "Keep STDIN open even if not attached"
+  description = "When true, keeps STDIN open even if not attached (equivalent to `docker run -i`). Useful for interactive debugging sessions"
   type        = bool
   default     = null
 }
 
 variable "container_pseudo_terminal" {
-  description = "Allocate a TTY"
+  description = "When true, allocates a pseudo-TTY for the container (equivalent to `docker run -t`). Must be used together with `container_interactive`"
   type        = bool
   default     = null
 }
 
 variable "awslogs_group" {
-  description = "CloudWatch Logs group name"
+  description = "CloudWatch Logs group name where container logs are sent. The log group must already exist or be created outside this module"
   type        = string
   default     = "/aws/ecs/default"
 }
 
 variable "awslogs_stream_prefix" {
-  description = "CloudWatch Logs stream prefix"
+  description = "Prefix for CloudWatch Logs stream names. Combined with the container name to form the full stream identifier"
   type        = string
   default     = "ecs"
 }
 
 variable "aws_region" {
-  description = "AWS region for CloudWatch Logs"
+  description = "AWS region where CloudWatch Logs are delivered (e.g. `us-east-1`). Must match the region where the ECS task runs"
   type        = string
   default     = "us-east-1"
 }
