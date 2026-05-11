@@ -1,10 +1,8 @@
-resource "random_string" "aws-this" {
-
+resource "random_string" "this" {
   length  = 12
   special = false
   lower   = true
   upper   = false
-
 }
 
 #################################################
@@ -181,8 +179,8 @@ resource "aws_instance" "this" {
     delete = try(var.timeouts.delete, null)
   }
 
-  tags        = merge({ "Name" = "${var.aws_prefix}-${random_string.aws-this.result}" }, var.instance_tags, var.tags, local.labels)
-  volume_tags = var.enable_volume_tags ? merge({ "Name" = "${var.aws_prefix}-${random_string.aws-this.result}" }, var.volume_tags) : null
+  tags        = merge({ "Name" = "${var.aws_prefix}-${random_string.this.result}" }, var.instance_tags, var.tags, var.labels)
+  volume_tags = var.enable_volume_tags ? merge({ "Name" = "${var.aws_prefix}-${random_string.this.result}" }, var.volume_tags) : null
 }
 
 #################################################
@@ -241,14 +239,14 @@ resource "aws_ecs_cluster" "this" {
   }
 
 
-  name = "${var.aws_prefix}-ecs-cluster-${random_string.aws-this.result}"
-  tags = merge({ "Name" = "${var.aws_prefix}-ecs-cluster-${random_string.aws-this.result}" }, var.ecs_tags, var.tags, local.labels)
+  name = "${var.aws_prefix}-ecs-cluster-${random_string.this.result}"
+  tags = merge({ "Name" = "${var.aws_prefix}-ecs-cluster-${random_string.this.result}" }, var.ecs_tags, var.tags, var.labels)
 }
 
 resource "aws_ecs_task_definition" "this" {
   count = var.aws_ecs_create ? 1 : 0
 
-  family       = "${var.aws_prefix}-ecs-task-${random_string.aws-this.result}"
+  family       = "${var.aws_prefix}-ecs-task-${random_string.this.result}"
   network_mode = var.ecs_network_mode
   ipc_mode     = var.ecs_ipc_mode
   pid_mode     = var.ecs_pid_mode
@@ -261,7 +259,7 @@ resource "aws_ecs_task_definition" "this" {
   execution_role_arn = var.ecs_execution_role_arn
   task_role_arn      = var.ecs_task_role_arn
 
-  tags         = merge({ "Name" = "${var.aws_prefix}-ecs-task-${random_string.aws-this.result}" }, var.ecs_tags, var.tags, local.labels)
+  tags         = merge({ "Name" = "${var.aws_prefix}-ecs-task-${random_string.this.result}" }, var.ecs_tags, var.tags, var.labels)
   track_latest = var.ecs_track_latest
 
   container_definitions = local.container_definitions_json
@@ -348,6 +346,4 @@ resource "aws_ecs_task_definition" "this" {
       size_in_gib = ephemeral_storage.value.size_in_gib
     }
   }
-
-
 }

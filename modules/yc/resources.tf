@@ -1,5 +1,4 @@
-resource "random_string" "yc-this" {
-
+resource "random_string" "this" {
   length  = 12
   special = false
   lower   = true
@@ -16,7 +15,7 @@ resource "yandex_serverless_container" "this" {
 
   count = var.yc_serverless_create ? 1 : 0
 
-  name               = "${var.yc_prefix}-svc-${random_string.yc-this.result}"
+  name               = "${var.yc_prefix}-svc-${random_string.this.result}"
   description        = try(var.serverless_description, null)
   memory             = var.serverless_memory
   cores              = try(var.serverless_cores, null)
@@ -24,7 +23,7 @@ resource "yandex_serverless_container" "this" {
   core_fraction      = try(var.serverless_core_fraction, null)
   execution_timeout  = try(var.serverless_execution_timeout, null)
   folder_id          = data.yandex_client_config.client[0].folder_id
-  labels             = local.labels
+  labels             = var.labels
   service_account_id = var.service_account_id
 
   dynamic "image" {
@@ -145,12 +144,12 @@ resource "yandex_compute_instance" "this" {
   count = var.yc_vm_create ? 1 : 0
 
   platform_id               = var.vm_vcpu_type
-  name                      = "${var.yc_prefix}-${random_string.yc-this.result}"
-  hostname                  = "${var.yc_prefix}-${random_string.yc-this.result}"
+  name                      = "${var.yc_prefix}-${random_string.this.result}"
+  hostname                  = "${var.yc_prefix}-${random_string.this.result}"
   allow_stopping_for_update = var.allow_stopping_for_update
   network_acceleration_type = var.network_acceleration_type
   service_account_id        = var.service_account_id
-  labels                    = local.labels
+  labels                    = var.labels
   zone                      = var.creation_zone
   folder_id                 = data.yandex_client_config.client[0].folder_id
 
@@ -301,4 +300,3 @@ resource "yandex_compute_instance" "this" {
     }
   }
 }
-
