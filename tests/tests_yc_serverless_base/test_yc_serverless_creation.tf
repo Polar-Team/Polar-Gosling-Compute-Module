@@ -29,6 +29,17 @@ locals {
   is_windows              = data.external.os.result.os == "Windows"
   docker_interpreter      = local.is_windows ? ["PowerShell", "-Command"] : ["bash", "-c"]
   docker_image_upload_cmd = local.is_windows ? local.docker_image_upload_cmd_windows : local.docker_image_upload_cmd_linux
+
+  labels = merge({
+    created_at = formatdate("DD-MM-YYYY-hh-mm", timestamp()),
+    owner      = "polar-team"
+    group      = "application"
+    },
+    {
+      environment = "test"
+      purpose     = "opentofu-yc-serverless-test"
+    }
+  )
 }
 
 variable "test_repository_link" {
@@ -61,8 +72,9 @@ resource "yandex_resourcemanager_folder_iam_member" "serverless_permissions" {
 }
 
 module "yc_test_serverless" {
-  source               = "../../"
+  source               = "../../modules/yc"
   yc_serverless_create = true
+  labels               = local.labels
   service_account_id   = yandex_iam_service_account.serverless_sa.id
 
   serverless_image = {
@@ -91,11 +103,6 @@ module "yc_test_serverless" {
 
   serverless_async_invocation = {
     service_account_id = yandex_iam_service_account.serverless_sa.id
-  }
-
-  additional_labels = {
-    environment = "test"
-    purpose     = "opentofu-yc-serverless-test"
   }
 
   depends_on = [

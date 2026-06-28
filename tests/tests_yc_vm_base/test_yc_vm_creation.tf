@@ -9,9 +9,23 @@ resource "yandex_vpc_subnet" "test_subnet" {
   v4_cidr_blocks = ["10.2.0.0/24"]
 }
 
+locals {
+  labels = merge({
+    created_at = formatdate("DD-MM-YYYY-hh-mm", timestamp()),
+    owner      = "polar-team"
+    group      = "application"
+    },
+    {
+      environment = "test"
+      purpose     = "opentofu-yc-vm-test"
+    }
+  )
+}
+
 module "yc_test_vm" {
-  source       = "../../"
+  source       = "../../modules/yc"
   yc_vm_create = true
+  labels       = local.labels
 
   creation_zone       = "ru-central1-a"
   source_image_family = "ubuntu-2204-lts"
@@ -32,10 +46,5 @@ module "yc_test_vm" {
       size = 20
       type = "network-hdd"
     }
-  }
-
-  additional_labels = {
-    environment = "test"
-    purpose     = "opentofu-yc-vm-test"
   }
 }

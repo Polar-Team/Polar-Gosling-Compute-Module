@@ -12,9 +12,23 @@ data "aws_security_group" "test_sg" {
   }
 }
 
+locals {
+  labels = merge({
+    created_at = formatdate("DD-MM-YYYY-hh-mm", timestamp()),
+    owner      = "polar-team"
+    group      = "application"
+    },
+    {
+      environment = "test"
+      purpose     = "opentofu-aws-vm-test"
+    }
+  )
+}
+
 module "aws_test_vm" {
-  source        = "../../"
+  source        = "../../modules/aws"
   aws_vm_create = true
+  labels        = local.labels
 
   availability_zone      = "us-east-1b"
   instance_type          = "t3.micro"
@@ -29,9 +43,4 @@ module "aws_test_vm" {
       volume_type = "gp3"
     }
   ]
-
-  additional_labels = {
-    environment = "test"
-    purpose     = "opentofu-aws-vm-test"
-  }
 }
