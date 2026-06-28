@@ -1,6 +1,20 @@
+locals {
+  labels = merge({
+    created_at = formatdate("DD-MM-YYYY-hh-mm", timestamp()),
+    owner      = "polar-team"
+    group      = "application"
+    },
+    {
+      environment = "test"
+      purpose     = "opentofu-aws-ecs-test"
+    }
+  )
+}
+
 module "aws_test_ecs" {
-  source         = "../../"
+  source         = "../../modules/aws"
   aws_ecs_create = true
+  labels         = local.labels
 
   ecs_execution_role_arn = "arn:aws:iam::650215453600:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
   ecs_task_role_arn      = "arn:aws:iam::650215453600:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
@@ -34,9 +48,4 @@ module "aws_test_ecs" {
   awslogs_group         = "/aws/ecs/test-task"
   awslogs_stream_prefix = "ecs"
   aws_region            = "us-east-1"
-
-  additional_labels = {
-    environment = "test"
-    purpose     = "opentofu-aws-ecs-test"
-  }
 }

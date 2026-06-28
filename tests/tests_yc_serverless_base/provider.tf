@@ -5,10 +5,6 @@ terraform {
       source  = "registry.terraform.io/yandex-cloud/yandex"
       version = ">= 0.170.0"
     }
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 4.66"
-    }
     random = {
       source  = "hashicorp/random"
       version = ">= 3.4.3"
@@ -23,5 +19,3 @@ terraform {
     }
   }
 }
-
-

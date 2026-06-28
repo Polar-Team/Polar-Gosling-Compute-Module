@@ -88,6 +88,48 @@ The `terraform.rc` files inside each `tests/` subdirectory already use this patt
 
 Toggle creation with `aws_vm_create`, `aws_ecs_create`, `yc_vm_create`, `yc_serverless_create`.
 
+## Per-cloud provider separation
+
+The module is split into two per-cloud submodules to let single-cloud consumers avoid pulling in the other cloud's provider:
+
+- `./modules/aws` — declares only `hashicorp/aws` and `hashicorp/random`
+- `./modules/yc`  — declares only `yandex-cloud/yandex` and `hashicorp/random`
+
+### Two ways to consume the module
+
+**1. Root module (backward-compatible).** Use the repo root as before. Both providers are declared and can target both clouds in a single call. The root now delegates to the submodules internally with `count` gating, so unused-cloud resources are never planned:
+
+```hcl
+module "runner" {
+  source = "git::https://github.com/your-org/Polar-Gosling-Compute-Module.git?ref=v2.0.0"
+
+  yc_vm_create = true
+  # ...
+}
+```
+
+Existing deployments upgrade in place: root-level `moved { }` blocks migrate resources from the flat layout into `module.aws[0].*` / `module.yc[0].*`, producing zero diff on the next apply.
+
+**2. Per-cloud submodule (full provider isolation).** If you only need one cloud and want to avoid declaring the other provider entirely, source the per-cloud submodule directly:
+
+```hcl
+# YC-only: no AWS provider needed at all
+module "runner" {
+  source       = "git::https://github.com/your-org/Polar-Gosling-Compute-Module.git//modules/yc?ref=v2.0.0"
+  yc_vm_create = true
+  # ...
+}
+```
+
+```hcl
+# AWS-only: no Yandex provider needed at all
+module "runner" {
+  source        = "git::https://github.com/your-org/Polar-Gosling-Compute-Module.git//modules/aws?ref=v2.0.0"
+  aws_vm_create = true
+  # ...
+}
+```
+
 ## Requirements
 
 | Name | Version |
